@@ -174,7 +174,9 @@ void MyGUI::render() {
                     selectedGameObject->GetComponent<MeshLoader>()->GetMesh()->deleteCheckerTexture();
                 }
             }
-
+			//Display Mesh Info         
+			ImGui::Text("Mesh Info");
+			ImGui::Text("Mesh Path: %s", selectedGameObject->meshPath.c_str());
             if (ImGui::Checkbox("Draw Normals", &selectedGameObject->GetComponent<MeshLoader>()->drawNormals)) {
                 
             }
