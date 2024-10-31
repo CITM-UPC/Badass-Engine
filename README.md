@@ -37,9 +37,3 @@ Extra Controls:
 -You can press Alt + Left Click while not selecting anything to make the camera orbitate around the mouse
 
 -Hold Right Click + Q/E to make the camera move upwards or downwards
-
-Extra Controls:
-
--You can press the Middle Mouse Button to move across the screen
-
--You can press Alt + Left Click while not selecting anything to make the camera orbitate around the mouse
