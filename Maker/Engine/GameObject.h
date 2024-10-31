@@ -15,7 +15,7 @@ class GameObject : public std::enable_shared_from_this<GameObject>, public TreeE
 {
 
 public:
-	std::shared_ptr<TransformComponent> _transform;
+	Transform _transform;
 	std::shared_ptr<Mesh> _mesh_ptr;
 	glm::u8vec3 _color = glm::u8vec3(255, 255, 255);
 	Texture _texture;
@@ -47,7 +47,7 @@ public:
 
 	bool CompareTag(const std::string& tag) const;
 
-	std::shared_ptr<TransformComponent> GetTransform() const { return _transform; }
+	auto& GetTransform() const { return _transform; }
 
 	/*const auto& transform() const { return _transform; }
 	auto& transform() { return _transform; }*/

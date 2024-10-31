@@ -20,6 +20,8 @@ class Transform {
 	};
 
 public:
+	
+
 	const auto& mat() const { return _mat; }
 	const auto& left() const { return _left; }
 	const auto& up() const { return _up; }
@@ -39,6 +41,20 @@ public:
 		eulerAngles = glm::degrees(eulerAngles);
 
 		return eulerAngles;
+	}
+
+	const auto& GetScale() const {
+
+		glm::vec3 left(_mat[0][0], _mat[0][1], _mat[0][2]);
+		glm::vec3 up(_mat[1][0], _mat[1][1], _mat[1][2]);
+		glm::vec3 forward(_mat[2][0], _mat[2][1], _mat[2][2]);
+		// Calculate the scale vector from the _left, _up, and _fwd vectors
+		vec3 scale;
+		scale.x = glm::length(left);
+		scale.y = glm::length(up);
+		scale.z = glm::length(forward);
+
+		return scale;
 	}
 
 	auto& pos() { return _pos; }

@@ -5,7 +5,7 @@ using namespace std;
 
 GameObject::GameObject(const std::string& name) : name(name), cachedComponentType(typeid(Component))
 {
-	_transform = AddComponent<TransformComponent>();
+	//_transform = AddComponent<TransformComponent>();
 }
 
 GameObject::~GameObject()
@@ -16,7 +16,7 @@ GameObject::~GameObject()
 void GameObject::draw() const {
 
 	glPushMatrix();
-	glMultMatrixd(_transform->GetData());
+	glMultMatrixd(_transform.data());
 
 	if (auto meshRenderer = GetComponent<MeshLoader>())
 	{
@@ -50,7 +50,7 @@ BoundingBox GameObject::boundingBox() const {
 	BoundingBox bbox = localBoundingBox();
 	if (!_mesh_ptr && children().size()) bbox = children().front().boundingBox();
 	for (const auto& child : children()) bbox = bbox + child.boundingBox();
-	return _transform->GetMatrix() * bbox;
+	return _transform.mat() * bbox;
 }
 
 void GameObject::drawAxis(double size) {
@@ -93,7 +93,7 @@ void GameObject::drawDebug(const GameObject& obj) {
 	glPushMatrix();
 	glColor3ub(255, 255, 0);
 	drawBoundingBox(obj.boundingBox());
-	glMultMatrixd(obj.GetTransform()->GetData());
+	glMultMatrixd(obj.GetTransform().data());
 	drawAxis(0.5);
 	glColor3ub(255, 255, 255);
 	drawBoundingBox(obj.localBoundingBox());
