@@ -7,7 +7,19 @@
 #include <imgui_impl_sdl2.h>
 #include <imgui_impl_opengl3.h>
 #include <tinyfiledialogs/tinyfiledialogs.h> 
+//#include <psapi.h>   // Include Psapi.h for PROCESS_MEMORY_COUNTERS_EX
+//#include <windows.h> // Include Windows.h for GetProcessMemoryInfo
 
+
+
+
+/*float getMemoryConsumption() {
+    PROCESS_MEMORY_COUNTERS_EX pmc;
+    if (GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc))) {
+        return static_cast<float>(pmc.WorkingSetSize) / (1024 * 1024); // Convert bytes to MB
+    }
+    return 0.0f; // Return 0 if unable to get memory info
+}*/
 MyGUI::MyGUI(SDL_Window* window, void* context) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -27,6 +39,156 @@ MyGUI::~MyGUI() {
 
 FileManager fileManager;
 GameObject* selectedGameObject = nullptr; // Define selectedGameObject
+
+
+void MyGUI::renderConfigurationWindow() {
+    ImGui::SetNextWindowSize(ImVec2(480, 400), ImGuiCond_Appearing);
+    ImGui::SetNextWindowPos(ImVec2(300, 20), ImGuiCond_Appearing);
+    ImGui::SetNextWindowCollapsed(true, ImGuiCond_Appearing);
+    if (ImGui::Begin("Configuration", NULL)) {
+
+        // FPS Graph
+        static float fpsValues[90] = { 0 };
+        static int fpsValuesOffset = 0;
+        float fps = ImGui::GetIO().Framerate;
+        fpsValues[fpsValuesOffset] = fps;
+        fpsValuesOffset = (fpsValuesOffset + 1) % IM_ARRAYSIZE(fpsValues);
+        ImGui::PlotLines("FPS", fpsValues, IM_ARRAYSIZE(fpsValues), fpsValuesOffset, "Frames Per Second", 0.0f, 120.0f, ImVec2(0, 80));
+
+        // Configuration for modules
+        if (ImGui::CollapsingHeader("Renderer")) {
+            // Add renderer configuration options here
+        }
+        if (ImGui::CollapsingHeader("Window")) {
+            // Add window configuration options here
+        }
+        if (ImGui::CollapsingHeader("Input")) {
+            // Add input configuration options here
+        }
+        if (ImGui::CollapsingHeader("Textures")) {
+            // Add texture configuration options here
+        }
+
+        // Information output
+        if (ImGui::CollapsingHeader("Information")) {
+            // Memory consumption
+            //ImGui::Text("Memory Consumption: %.2f MB", getMemoryConsumption());
+
+            // Hardware detection
+            ImGui::Text("CPU Cores: %d", SDL_GetCPUCount());
+            ImGui::Text("RAM: %d MB", SDL_GetSystemRAM());
+            ImGui::Text("GPU: %s", glGetString(GL_RENDERER));
+
+            // Software versions
+            ImGui::Text("SDL Version: %d.%d.%d", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL);
+            ImGui::Text("OpenGL Version: %s", glGetString(GL_VERSION));
+            //ImGui::Text("DevIL Version: %s", IL_VERSION); //It creates a crash, are we using DevIL?
+        }
+    }
+    ImGui::End();
+}
+
+void MyGUI::renderGameObjectWindow()
+{
+    ImGui::SetNextWindowSize(ImVec2(300, 700), ImGuiCond_Always);
+    ImGui::SetNextWindowPos(ImVec2(0, 20), ImGuiCond_Always);
+    if (ImGui::Begin("Gameobjects", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove)) {
+        for (auto& child : scene.getChildren()) {
+            static char newName[128] = "";
+            static bool renaming = false;
+            static GameObject* renamingObject = nullptr;
+
+            if (renaming && renamingObject == &child) {
+                ImGui::SetKeyboardFocusHere();
+                if (ImGui::InputText("##rename", newName, IM_ARRAYSIZE(newName), ImGuiInputTextFlags_EnterReturnsTrue)) {
+                    child.name = newName;
+                    renaming = false;
+                }
+                if (ImGui::IsItemDeactivated() || ImGui::IsKeyPressed(ImGuiKey_Escape)) {
+                    renaming = false;
+                }
+            }
+            else {
+                if (ImGui::Selectable(child.name.c_str(), selectedGameObject == &child)) {
+                    selectedGameObject = &child;
+                }
+                if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
+                    renaming = true;
+                    renamingObject = &child;
+                    strcpy_s(newName, child.name.c_str());
+                }
+            }
+        }
+    }
+    ImGui::End();
+}
+
+void MyGUI::renderInspectorWindow()
+{
+    ImGui::SetNextWindowSize(ImVec2(500, 700), ImGuiCond_Always);
+    ImGui::SetNextWindowPos(ImVec2(780, 20), ImGuiCond_Always);
+    if (ImGui::Begin("Inspector", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove)) {
+        if (selectedGameObject) {
+            ImGui::Text("Selected GameObject: %s", selectedGameObject->name.c_str());
+            ImGui::Separator();
+            // Display position
+            ImGui::Text("Position");
+            float position[3] = { static_cast<float>(selectedGameObject->_transform->GetPosition().x),
+                      static_cast<float>(selectedGameObject->_transform->GetPosition().y),
+                      static_cast<float>(selectedGameObject->_transform->GetPosition().z) };
+
+            if (ImGui::InputFloat3("##position", position)) {
+                //selectedGameObject->_transform->Translate(glm::dvec3(position[0], position[1], position[2]));
+            }
+
+            // Display rotation
+            ImGui::Text("Rotation");
+            glm::vec3 rotation = selectedGameObject->_transform->GetRotation();
+            float rotationArray[3] = { rotation.x, rotation.y, rotation.z };
+
+            if (ImGui::InputFloat3("##rotation", rotationArray)) {
+                //selectedGameObject->_transform->SetRotation(glm::vec3(rotationArray[0], rotationArray[1], rotationArray[2]));
+            }
+
+            //Display scale
+            ImGui::Text("Scale");
+            glm::vec3 scale = selectedGameObject->_transform->GetScale();
+            float scaleArray[3] = { scale.x, scale.y, scale.z };
+
+            if (ImGui::InputFloat3("##scale", scaleArray)) {
+                //selectedGameObject->_transform->SetScale(glm::vec3(scaleArray[0], scaleArray[1], scaleArray[2]));
+            }
+
+
+
+            ImGui::Separator();
+            //Display Texture Info
+            ImGui::Text("Texture Info");
+
+            ImGui::Text("Texture Path: %s", selectedGameObject->texturePath.c_str());
+            //ImGui::Text("Texture size: %d x %d", selectedGameObject->GetComponent<MeshLoader>()->GetMesh()->textureWidth, selectedGameObject->GetComponent<MeshLoader>()->GetMesh()->textureHeight);
+            if (ImGui::Checkbox("Draw Texture", &selectedGameObject->GetComponent<MeshLoader>()->drawTexture)) {
+                if (selectedGameObject->GetComponent<MeshLoader>()->drawTexture)
+                {
+                    selectedGameObject->GetComponent<MeshLoader>()->GetMesh()->deleteCheckerTexture();
+                }
+            }
+
+            ImGui::Separator();
+            //Display Mesh Info         
+            ImGui::Text("Mesh Info");
+            ImGui::Text("Mesh Path: %s", selectedGameObject->meshPath.c_str());
+            if (ImGui::Checkbox("Draw Normals", &selectedGameObject->GetComponent<MeshLoader>()->drawNormals)) {
+
+            }
+        }
+        else {
+            ImGui::Text("No GameObject selected.");
+        }
+    }
+    ImGui::End();
+}
+
 
 void MyGUI::render() {
     ImGui_ImplOpenGL3_NewFrame();
@@ -95,103 +257,12 @@ void MyGUI::render() {
         }
         ImGui::EndMainMenuBar(); // Close the main menu bar
     }
-
-    ImGui::SetNextWindowSize(ImVec2(300, 700), ImGuiCond_Always);
-    ImGui::SetNextWindowPos(ImVec2(0, 20), ImGuiCond_Always);
     //GameObject window, Comment the line below if you don't want the GameObject window to appear
-    if (ImGui::Begin("Gameobjects", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove)) {
-        for (auto& child : scene.getChildren()) {
-            static char newName[128] = "";
-            static bool renaming = false;
-            static GameObject* renamingObject = nullptr;
-
-            if (renaming && renamingObject == &child) {
-                ImGui::SetKeyboardFocusHere();
-                if (ImGui::InputText("##rename", newName, IM_ARRAYSIZE(newName), ImGuiInputTextFlags_EnterReturnsTrue)) {
-                    child.name = newName;
-                    renaming = false;
-                }
-                if (ImGui::IsItemDeactivated() || ImGui::IsKeyPressed(ImGuiKey_Escape)) {
-                    renaming = false;
-                }
-            }
-            else {
-                if (ImGui::Selectable(child.name.c_str(), selectedGameObject == &child)) {
-                    selectedGameObject = &child;
-                }
-                if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
-                    renaming = true;
-                    renamingObject = &child;
-                    strcpy_s(newName, child.name.c_str());
-                }
-            }
-        }
-    }
-    ImGui::End();
-
-    ImGui::SetNextWindowSize(ImVec2(500, 700), ImGuiCond_Always);
-    ImGui::SetNextWindowPos(ImVec2(780, 20), ImGuiCond_Always);
+	renderGameObjectWindow();
     //Inspector window, Comment the line below if you don't want the Inspector window to appear
-    if (ImGui::Begin("Inspector", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove)) {
-        if (selectedGameObject) {
-            ImGui::Text("Selected GameObject: %s", selectedGameObject->name.c_str());
-			ImGui::Separator();
-            // Display position
-            ImGui::Text("Position");
-            float position[3] = { static_cast<float>(selectedGameObject->_transform->GetPosition().x),
-                      static_cast<float>(selectedGameObject->_transform->GetPosition().y),
-                      static_cast<float>(selectedGameObject->_transform->GetPosition().z) };
+	renderInspectorWindow();
 
-            if (ImGui::InputFloat3("##position", position)) {
-                //selectedGameObject->_transform->Translate(glm::dvec3(position[0], position[1], position[2]));
-            }
-
-            // Display rotation
-            ImGui::Text("Rotation");
-            glm::vec3 rotation = selectedGameObject->_transform->GetRotation();
-            float rotationArray[3] = { rotation.x, rotation.y, rotation.z };
-
-            if (ImGui::InputFloat3("##rotation", rotationArray)) {
-                //selectedGameObject->_transform->SetRotation(glm::vec3(rotationArray[0], rotationArray[1], rotationArray[2]));
-            }
-
-            //Display scale
-            ImGui::Text("Scale");
-            glm::vec3 scale = selectedGameObject->_transform->GetScale();
-            float scaleArray[3] = { scale.x, scale.y, scale.z };
-
-			if (ImGui::InputFloat3("##scale", scaleArray)) {
-				//selectedGameObject->_transform->SetScale(glm::vec3(scaleArray[0], scaleArray[1], scaleArray[2]));
-			}
-
-            
-
-			ImGui::Separator();
-			//Display Texture Info
-			ImGui::Text("Texture Info");
-
-			ImGui::Text("Texture Path: %s", selectedGameObject->texturePath.c_str());
-			//ImGui::Text("Texture size: %d x %d", selectedGameObject->GetComponent<MeshLoader>()->GetMesh()->textureWidth, selectedGameObject->GetComponent<MeshLoader>()->GetMesh()->textureHeight);
-            if (ImGui::Checkbox("Draw Texture", &selectedGameObject->GetComponent<MeshLoader>()->drawTexture)) {
-                if (selectedGameObject->GetComponent<MeshLoader>()->drawTexture)
-                {
-                    selectedGameObject->GetComponent<MeshLoader>()->GetMesh()->deleteCheckerTexture();
-                }
-            }
-
-			ImGui::Separator();
-			//Display Mesh Info         
-			ImGui::Text("Mesh Info");
-			ImGui::Text("Mesh Path: %s", selectedGameObject->meshPath.c_str());
-            if (ImGui::Checkbox("Draw Normals", &selectedGameObject->GetComponent<MeshLoader>()->drawNormals)) {
-                
-            }
-        }
-        else {
-            ImGui::Text("No GameObject selected.");
-        }
-    }
-    ImGui::End();
+    
     // Ensure no two GameObjects have the same name
     std::unordered_set<std::string> nameSet;
     for (auto& child : scene.getChildren()) {
@@ -207,7 +278,9 @@ void MyGUI::render() {
         }
         nameSet.insert(child.name);
     }
-    ImGui::ShowDemoWindow();
+    //ImGui::ShowDemoWindow();
+	//render configuration window
+	renderConfigurationWindow();
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }

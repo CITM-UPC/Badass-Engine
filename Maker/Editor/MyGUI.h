@@ -18,6 +18,9 @@ public:
     MyGUI(const MyGUI&) = delete;
     MyGUI& operator=(const MyGUI&) = delete;
     ~MyGUI();
+    void renderConfigurationWindow();
+    void renderGameObjectWindow();
+    void renderInspectorWindow();
     void render();
     void processEvent(const SDL_Event& event);
 private:
