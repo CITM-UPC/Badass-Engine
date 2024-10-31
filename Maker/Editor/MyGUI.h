@@ -31,3 +31,5 @@ private:
 
 
 };
+
+extern MyGUI* gui; // Define myGUI
