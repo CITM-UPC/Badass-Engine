@@ -225,6 +225,7 @@ void MyGUI::render() {
             }
             if (ImGui::MenuItem("Quit")) {
                 SDL_Quit();
+                exit(0);
             }
             ImGui::EndMenu(); // Close the "File" menu
 
