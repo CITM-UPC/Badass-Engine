@@ -155,7 +155,10 @@ void MyGUI::render() {
 				//selectedGameObject->_transform->SetScale(glm::vec3(scaleArray[0], scaleArray[1], scaleArray[2]));
 			}
 
-
+			//Display Texture Info
+			ImGui::Text("Texture Info");
+			//ImGui::Text("Texture Path: %s", selectedGameObject->GetComponent<MeshLoader>()->GetMesh()->texturePath.c_str());
+			//ImGui::Text("Texture size: %d x %d", selectedGameObject->GetComponent<MeshLoader>()->GetMesh()->textureWidth, selectedGameObject->GetComponent<MeshLoader>()->GetMesh()->textureHeight);
             if (ImGui::Checkbox("Draw Texture", &selectedGameObject->GetComponent<MeshLoader>()->drawTexture)) {
                 if (selectedGameObject->GetComponent<MeshLoader>()->drawTexture)
                 {
