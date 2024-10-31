@@ -133,9 +133,9 @@ void MyGUI::renderInspectorWindow()
             ImGui::Separator();
             // Display position
             ImGui::Text("Position");
-            float position[3] = { static_cast<float>(selectedGameObject->_transform->GetPosition().x),
-                      static_cast<float>(selectedGameObject->_transform->GetPosition().y),
-                      static_cast<float>(selectedGameObject->_transform->GetPosition().z) };
+            float position[3] = { static_cast<float>(selectedGameObject->_transform.pos().x),
+                      static_cast<float>(selectedGameObject->_transform.pos().y),
+                      static_cast<float>(selectedGameObject->_transform.pos().z) };
 
             if (ImGui::InputFloat3("##position", position)) {
                 //selectedGameObject->_transform->Translate(glm::dvec3(position[0], position[1], position[2]));
@@ -143,7 +143,7 @@ void MyGUI::renderInspectorWindow()
 
             // Display rotation
             ImGui::Text("Rotation");
-            glm::vec3 rotation = selectedGameObject->_transform->GetRotation();
+            glm::vec3 rotation = selectedGameObject->_transform.GetRotation();
             float rotationArray[3] = { rotation.x, rotation.y, rotation.z };
 
             if (ImGui::InputFloat3("##rotation", rotationArray)) {
@@ -152,7 +152,7 @@ void MyGUI::renderInspectorWindow()
 
             //Display scale
             ImGui::Text("Scale");
-            glm::vec3 scale = selectedGameObject->_transform->GetScale();
+            glm::vec3 scale = selectedGameObject->_transform.GetScale();
             float scaleArray[3] = { scale.x, scale.y, scale.z };
 
             if (ImGui::InputFloat3("##scale", scaleArray)) {
@@ -166,7 +166,7 @@ void MyGUI::renderInspectorWindow()
             ImGui::Text("Texture Info");
 
             ImGui::Text("Texture Path: %s", selectedGameObject->texturePath.c_str());
-            //ImGui::Text("Texture size: %d x %d", selectedGameObject->GetComponent<MeshLoader>()->GetMesh()->textureWidth, selectedGameObject->GetComponent<MeshLoader>()->GetMesh()->textureHeight);
+            ImGui::Text("Texture size: %d x %d", selectedGameObject->GetComponent<MeshLoader>()->GetImage()->width(), selectedGameObject->GetComponent<MeshLoader>()->GetImage()->height());
             if (ImGui::Checkbox("Draw Texture", &selectedGameObject->GetComponent<MeshLoader>()->drawTexture)) {
                 if (selectedGameObject->GetComponent<MeshLoader>()->drawTexture)
                 {
