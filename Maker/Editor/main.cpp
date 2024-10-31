@@ -335,8 +335,8 @@ static void handleKeyboardInput() {
 
 	if (state[SDL_SCANCODE_F] && selectedGameObject != nullptr) {
 		isFpressed != isFpressed;
-		camera.transform().pos() = selectedGameObject->GetTransform()->GetPosition() + vec3(0, 1, 4);
-		camera.transform().lookAt(selectedGameObject->GetTransform()->GetPosition());
+		camera.transform().pos() = selectedGameObject->GetTransform().pos() + vec3(0, 1, 4);
+		camera.transform().lookAt(selectedGameObject->GetTransform().pos());
 	}
 	if (state[SDL_SCANCODE_LALT]) {
 		altKeyPressed = true;
