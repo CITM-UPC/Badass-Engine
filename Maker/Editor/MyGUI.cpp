@@ -30,7 +30,20 @@ MyGUI::~MyGUI() {
 
 FileManager fileManager;
 GameObject* selectedGameObject = nullptr; // Define selectedGameObject
+void MyGUI::logMessage(const std::string& message) {
+    logMessages.push_back(message);
+}
 
+void MyGUI::renderConsoleWindow() {
+    ImGui::SetNextWindowSize(ImVec2(480, 200), ImGuiCond_Appearing);
+    ImGui::SetNextWindowPos(ImVec2(300, 450), ImGuiCond_Appearing);
+    if (ImGui::Begin("Console", NULL)) {
+        for (const auto& message : logMessages) {
+            ImGui::TextUnformatted(message.c_str());
+        }
+    }
+    ImGui::End();
+}
 
 void MyGUI::renderConfigurationWindow() {
     ImGui::SetNextWindowSize(ImVec2(480, 400), ImGuiCond_Appearing);
@@ -252,7 +265,8 @@ void MyGUI::render() {
 	renderGameObjectWindow();
     //Inspector window, Comment the line below if you don't want the Inspector window to appear
 	renderInspectorWindow();
-
+	//Console window, Comment the line below if you don't want the Console window to appear
+	renderConsoleWindow();
     
     // Ensure no two GameObjects have the same name
     std::unordered_set<std::string> nameSet;
