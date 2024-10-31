@@ -505,7 +505,7 @@ int main(int argc, char* argv[]) {
 
 	SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 
-	while (window.processEvents(&gui) && window.isOpen()) {
+	while (window.isOpen()) {
 		const auto t0 = hrclock::now();
 		handleKeyboardInput();
 		display_func();
@@ -517,8 +517,9 @@ int main(int argc, char* argv[]) {
 
 		while (SDL_PollEvent(&event))
 		{
+			window.processEvent(event);
+			if (!window.isOpen()) break;
 			gui.processEvent(event);
-			//window.processEvents(&gui);
 
 			switch (event.type) {
 			case SDL_DROPFILE:
