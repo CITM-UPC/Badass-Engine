@@ -7,19 +7,26 @@
 #include <imgui_impl_sdl2.h>
 #include <imgui_impl_opengl3.h>
 #include <tinyfiledialogs/tinyfiledialogs.h> 
-//#include <psapi.h>   // Include Psapi.h for PROCESS_MEMORY_COUNTERS_EX
-//#include <windows.h> // Include Windows.h for GetProcessMemoryInfo
 
+#include <psapi.h>   // Ensure this include is present for PROCESS_MEMORY_COUNTERS_EX
 
+// Ensure PSAPI_VERSION is set to 1 before including psapi.h
+#define PSAPI_VERSION 1
 
+// Existing code
+#include <windows.h> // Ensure this include is present for GetProcessMemoryInfo
 
-/*float getMemoryConsumption() {
+#pragma comment(lib, "Psapi.lib") // Ensure this pragma is present to link against Psapi.lib
+
+// Existing code
+float getMemoryConsumption() {
     PROCESS_MEMORY_COUNTERS_EX pmc;
     if (GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc))) {
         return static_cast<float>(pmc.WorkingSetSize) / (1024 * 1024); // Convert bytes to MB
     }
     return 0.0f; // Return 0 if unable to get memory info
-}*/
+}
+
 MyGUI::MyGUI(SDL_Window* window, void* context) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -72,7 +79,7 @@ void MyGUI::renderConfigurationWindow() {
         // Information output
         if (ImGui::CollapsingHeader("Information")) {
             // Memory consumption
-            //ImGui::Text("Memory Consumption: %.2f MB", getMemoryConsumption());
+            ImGui::Text("Memory Consumption: %.2f MB", getMemoryConsumption());
 
             // Hardware detection
             ImGui::Text("CPU Cores: %d", SDL_GetCPUCount());
