@@ -64,14 +64,23 @@ void MyGUI::render() {
 			if (ImGui::MenuItem("Cube"))
 			{
 				// Create a new GameObject with a cube mesh
+				GameObject go;
+                go = scene.createCube();
+				scene.emplaceChild(go);
 			}
             if (ImGui::MenuItem("Sphere"))
             {
 				// Create a new GameObject with a sphere mesh
+                GameObject go;
+                go = scene.createSphere();
+                scene.emplaceChild(go);
             }
             if (ImGui::MenuItem("Cylinder"))
             {
 				// Create a new GameObject with a cylinder mesh
+                GameObject go;
+                go = scene.createCylinder();
+                scene.emplaceChild(go);
             }
             ImGui::EndMenu();
         }

@@ -9,6 +9,7 @@ void FileManager::LoadFile(const char* path, GameObject& go)
 		// Load Mesh
 		auto mesh = std::make_shared<Mesh>();
 		mesh->LoadFile(path);
+		go.meshPath = path;
 		go.AddComponent<MeshLoader>()->SetMesh(mesh);
 		go.setMesh(mesh);
 	}

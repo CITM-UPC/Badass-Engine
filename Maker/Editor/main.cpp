@@ -493,6 +493,7 @@ int main(int argc, char* argv[]) {
 
 	mesh->LoadFile("BakerHouse.fbx");
 	GameObject go;
+	go.meshPath = "BakerHouse.fbx";
 	go.AddComponent<MeshLoader>()->SetMesh(mesh);
 	go.setMesh(mesh);
 	imageTexture->LoadTexture("Baker_house.png");
@@ -505,7 +506,7 @@ int main(int argc, char* argv[]) {
 
 	SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 
-	while (window.processEvents(&gui) && window.isOpen()) {
+	while (window.isOpen()) {
 		const auto t0 = hrclock::now();
 		handleKeyboardInput();
 		display_func();
@@ -517,8 +518,9 @@ int main(int argc, char* argv[]) {
 
 		while (SDL_PollEvent(&event))
 		{
+			window.processEvent(event);
+			if (!window.isOpen()) break;
 			gui.processEvent(event);
-			//window.processEvents(&gui);
 
 			switch (event.type) {
 			case SDL_DROPFILE:
@@ -528,6 +530,7 @@ int main(int argc, char* argv[]) {
 				if (extension == "obj" || extension == "fbx" || extension == "dae") {
 					mesh->LoadFile(dropped_filePath);
 					GameObject go;
+					go.meshPath = dropped_filePath;
 					go.AddComponent<MeshLoader>()->SetMesh(mesh);
 					go.setMesh(mesh);
 					scene.emplaceChild(go);
