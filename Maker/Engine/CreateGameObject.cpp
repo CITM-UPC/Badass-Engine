@@ -8,7 +8,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-std::shared_ptr<GameObject> GameObject::createCube() 
+GameObject GameObject::createCube()
 {
 	
 	auto mesh = std::make_shared<Mesh>();
@@ -57,13 +57,15 @@ std::shared_ptr<GameObject> GameObject::createCube()
     mesh->load(vertices.data(), vertices.size(), indices.data(), indices.size());
     mesh->loadTexCoords(texCoords.data(), texCoords.size());
 
-    auto gameObject = std::make_shared<GameObject>();
-    gameObject->setMesh(mesh);
+    GameObject gameObject;
+    gameObject.AddComponent<MeshLoader>()->SetMesh(mesh);
+    gameObject.SetName("Cube");
+    gameObject.setMesh(mesh);
 
     return gameObject;
 }
 
-std::shared_ptr<GameObject> GameObject::createSphere() {
+GameObject GameObject::createSphere() {
     auto mesh = std::make_shared<Mesh>();
 
     std::vector<glm::vec3> vertices;
@@ -113,13 +115,15 @@ std::shared_ptr<GameObject> GameObject::createSphere() {
     mesh->load(vertices.data(), vertices.size(), indices.data(), indices.size());
     mesh->loadTexCoords(texCoords.data(), texCoords.size());
 
-    auto gameObject = std::make_shared<GameObject>();
-    gameObject->setMesh(mesh);
+    GameObject gameObject;
+    gameObject.AddComponent<MeshLoader>()->SetMesh(mesh);
+    gameObject.SetName("Sphere");
+    gameObject.setMesh(mesh);
 
     return gameObject;
 }
 
-std::shared_ptr<GameObject> GameObject::createCylinder()
+GameObject GameObject::createCylinder()
 {
     auto mesh = std::make_shared<Mesh>();
 
@@ -179,8 +183,10 @@ std::shared_ptr<GameObject> GameObject::createCylinder()
     mesh->load(vertices.data(), vertices.size(), indices.data(), indices.size());
     mesh->loadTexCoords(texCoords.data(), texCoords.size());
 
-    auto gameObject = std::make_shared<GameObject>();
-    gameObject->setMesh(mesh);
+    GameObject gameObject;
+    gameObject.AddComponent<MeshLoader>()->SetMesh(mesh);
+    gameObject.SetName("Cylinder");
+    gameObject.setMesh(mesh);
 
     return gameObject;
 }

@@ -69,9 +69,9 @@ public:
 	bool hasMesh() const { return _mesh_ptr != nullptr; }
 
 	// Basic Shapes
-	static std::shared_ptr<GameObject> createCube();
-	static std::shared_ptr<GameObject> createSphere();
-	static std::shared_ptr<GameObject> createCylinder();
+	static GameObject createCube();
+	static GameObject createSphere();
+	static GameObject createCylinder();
 
 	void draw() const;
 	void drawAxis(double size);

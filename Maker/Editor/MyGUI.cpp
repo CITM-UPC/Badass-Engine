@@ -64,14 +64,23 @@ void MyGUI::render() {
 			if (ImGui::MenuItem("Cube"))
 			{
 				// Create a new GameObject with a cube mesh
+				GameObject go;
+                go = scene.createCube();
+				scene.emplaceChild(go);
 			}
             if (ImGui::MenuItem("Sphere"))
             {
 				// Create a new GameObject with a sphere mesh
+                GameObject go;
+                go = scene.createSphere();
+                scene.emplaceChild(go);
             }
             if (ImGui::MenuItem("Cylinder"))
             {
 				// Create a new GameObject with a cylinder mesh
+                GameObject go;
+                go = scene.createCylinder();
+                scene.emplaceChild(go);
             }
             ImGui::EndMenu();
         }
@@ -134,7 +143,7 @@ void MyGUI::render() {
                       static_cast<float>(selectedGameObject->_transform->GetPosition().z) };
 
             if (ImGui::InputFloat3("##position", position)) {
-                //selectedGameObject->_transform->Translate(glm::dvec3(position[0], position[1], position[2]));
+                selectedGameObject->_transform->Translate(glm::dvec3(position[0], position[1], position[2]));
             }
 
             // Display rotation
