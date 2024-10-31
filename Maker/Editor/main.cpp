@@ -373,7 +373,7 @@ static void mouseMotion_func(int x, int y) {
 		camera.transform().translate(vec3(0, delta.y * 0.01, 0));
 	}
 
-	if (leftMousePressed && altKeyPressed) {
+	if (leftMousePressed && altKeyPressed && selectedGameObject == nullptr) {
 
 		int deltaX = x - lastMouseX;
 		int deltaY = y - lastMouseY;
@@ -407,6 +407,47 @@ static void mouseMotion_func(int x, int y) {
 		// Realinear la cámara después de la rotación
 		camera.transform().alignCamera();
 	}
+	else if (leftMousePressed && altKeyPressed && selectedGameObject != nullptr) {
+		// Calcular el desplazamiento del ratón
+		int deltaX = x - lastMouseX;
+		int deltaY = y - lastMouseY;
+
+		// Actualizar la última posición del ratón
+		lastMouseX = x;
+		lastMouseY = y;
+
+		// Ajustar la sensibilidad de movimiento
+		const double baseSensitivity = 0.1;
+		double movementMagnitude = glm::length(glm::vec2(deltaX, deltaY));
+		const double adaptiveSensitivity = baseSensitivity * (1.0 + 0.01 * movementMagnitude);
+
+		// Actualizar los ángulos de rotación para la órbita
+		yaw += deltaX * adaptiveSensitivity;
+		pitch -= deltaY * adaptiveSensitivity;
+
+		// Limitar el ángulo de pitch para evitar que la cámara se voltee
+		if (pitch > MAX_PITCH) pitch = MAX_PITCH;
+		if (pitch < -MAX_PITCH) pitch = -MAX_PITCH;
+
+		// Convertir los ángulos a radianes para el cálculo de órbita
+		float radiansYaw = glm::radians(yaw);
+		float radiansPitch = glm::radians(pitch);
+
+		// Definir el radio de la órbita
+		float orbitRadius = 10.0f;
+
+		// Calcular la nueva posición de la cámara en la órbita alrededor del objeto seleccionado
+		glm::vec3 orbitPosition = glm::vec3(selectedGameObject->GetTransform().pos()) + glm::vec3(
+			orbitRadius * cos(radiansPitch) * sin(radiansYaw),
+			orbitRadius * sin(radiansPitch),
+			orbitRadius * cos(radiansPitch) * cos(radiansYaw)
+		);
+
+		// Actualizar la posición de la cámara y orientar hacia el objeto seleccionado
+		camera.transform().SetPosition(orbitPosition);
+		camera.transform().lookAt(selectedGameObject->GetTransform().pos());
+	}
+	
 	if (rightMousePressed) {
 		if (rightMousePressed) {
 			// Calcular la diferencia de movimiento del ratón
@@ -440,6 +481,7 @@ static void mouseMotion_func(int x, int y) {
 			}
 		}
 	}
+	
 }
 
 
