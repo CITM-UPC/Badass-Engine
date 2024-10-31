@@ -135,7 +135,7 @@ void MyGUI::render() {
     if (ImGui::Begin("Inspector", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove)) {
         if (selectedGameObject) {
             ImGui::Text("Selected GameObject: %s", selectedGameObject->name.c_str());
-
+			ImGui::Separator();
             // Display position
             ImGui::Text("Position");
             float position[3] = { static_cast<float>(selectedGameObject->_transform.pos().x),
@@ -164,9 +164,13 @@ void MyGUI::render() {
 				//selectedGameObject->_transform->SetScale(glm::vec3(scaleArray[0], scaleArray[1], scaleArray[2]));
 			}
 
+            
+
+			ImGui::Separator();
 			//Display Texture Info
 			ImGui::Text("Texture Info");
-			//ImGui::Text("Texture Path: %s", selectedGameObject->GetComponent<MeshLoader>()->GetMesh()->texturePath.c_str());
+
+			ImGui::Text("Texture Path: %s", selectedGameObject->texturePath.c_str());
 			//ImGui::Text("Texture size: %d x %d", selectedGameObject->GetComponent<MeshLoader>()->GetMesh()->textureWidth, selectedGameObject->GetComponent<MeshLoader>()->GetMesh()->textureHeight);
             if (ImGui::Checkbox("Draw Texture", &selectedGameObject->GetComponent<MeshLoader>()->drawTexture)) {
                 if (selectedGameObject->GetComponent<MeshLoader>()->drawTexture)
@@ -175,6 +179,10 @@ void MyGUI::render() {
                 }
             }
 
+			ImGui::Separator();
+			//Display Mesh Info         
+			ImGui::Text("Mesh Info");
+			ImGui::Text("Mesh Path: %s", selectedGameObject->meshPath.c_str());
             if (ImGui::Checkbox("Draw Normals", &selectedGameObject->GetComponent<MeshLoader>()->drawNormals)) {
                 
             }
@@ -199,7 +207,7 @@ void MyGUI::render() {
         }
         nameSet.insert(child.name);
     }
-    //ImGui::ShowDemoWindow();
+    ImGui::ShowDemoWindow();
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
