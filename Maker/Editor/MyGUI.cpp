@@ -211,7 +211,7 @@ void MyGUI::render() {
                 const char* filterPatterns[1] = { "*.fbx" };
                 const char* filePath = tinyfd_openFileDialog(
                     "Select an FBX file",
-                    "",
+                    "Assets",
                     1,
                     filterPatterns,
                     NULL,

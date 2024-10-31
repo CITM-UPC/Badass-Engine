@@ -536,13 +536,13 @@ int main(int argc, char* argv[]) {
 	auto texture = std::make_shared<Texture>();
 	std::string extension;
 
-	mesh->LoadFile("BakerHouse.fbx");
+	mesh->LoadFile("Assets/BakerHouse.fbx");
 	GameObject go;
-	go.meshPath = "BakerHouse.fbx";
+	go.meshPath = "Assets/BakerHouse.fbx";
 	go.AddComponent<MeshLoader>()->SetMesh(mesh);
 	go.setMesh(mesh);
-	imageTexture->LoadTexture("Baker_house.png");
-	go.texturePath = "Baker_house.png";
+	imageTexture->LoadTexture("Assets/Baker_house.png");
+	go.texturePath = "Assets/Baker_house.png";
 	texture->setImage(imageTexture);
 	go.GetComponent<MeshLoader>()->GetMesh()->deleteCheckerTexture();
 	go.GetComponent<MeshLoader>()->SetImage(imageTexture);
