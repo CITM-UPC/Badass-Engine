@@ -212,7 +212,6 @@ static void display_func() {
 
 	for (auto& child : scene.children()) {
 		child.draw();
-		child.GetTransform()->Translate(glm::vec3(0, 0.001, 0));
 	}
 
 	scene.drawDebug(scene);
@@ -491,6 +490,18 @@ int main(int argc, char* argv[]) {
 	auto imageTexture = make_shared<Image>();
 	auto texture = std::make_shared<Texture>();
 	std::string extension;
+
+	mesh->LoadFile("BakerHouse.fbx");
+	GameObject go;
+	go.AddComponent<MeshLoader>()->SetMesh(mesh);
+	go.setMesh(mesh);
+	imageTexture->LoadTexture("Baker_house.png");
+	texture->setImage(imageTexture);
+	go.GetComponent<MeshLoader>()->GetMesh()->deleteCheckerTexture();
+	go.GetComponent<MeshLoader>()->SetImage(imageTexture);
+	go.GetComponent<MeshLoader>()->SetTexture(texture);
+	go.SetName("BakerHouse");
+	scene.emplaceChild(go);
 
 	SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 
