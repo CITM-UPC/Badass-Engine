@@ -10,6 +10,7 @@
 #include "Texture.h"
 #include "BoundingBox.h"
 #include "Mesh.h"
+#include "Component.h"
 
 class GameObject : public std::enable_shared_from_this<GameObject>, public TreeExt<GameObject>
 {
@@ -30,16 +31,16 @@ public:
 	GameObject(const std::string& name = "GameObject");
 	~GameObject();
 
-	template <IsComponent T, typename... Args>
+	template <typename T, typename... Args>
 	std::shared_ptr<T> AddComponent(Args&&... args);
 
-	template <IsComponent T>
+	template <typename T>
 	std::shared_ptr<T> GetComponent() const;
 
-	template <IsComponent T>
+	template <typename T>
 	void RemoveComponent();
 
-	template <IsComponent T>
+	template <typename T>
 	bool HasComponent() const;
 
 	std::string GetName() const;
@@ -92,14 +93,14 @@ private:
 	mutable std::shared_ptr<Component> cachedComponent;
 };
 
-template <IsComponent T, typename... Args>
+template <typename T, typename... Args>
 std::shared_ptr<T> GameObject::AddComponent(Args&&... args) {
 	std::shared_ptr<T> newComponent = std::make_shared<T>(weak_from_this(), std::forward<Args>(args)...);
 	components[typeid(T)] = newComponent;
 	return newComponent;
 }
 
-template <IsComponent T>
+template <typename T>
 std::shared_ptr<T> GameObject::GetComponent() const {
 	if (cachedComponentType == typeid(T) && cachedComponent) {
 		return std::static_pointer_cast<T>(cachedComponent);
@@ -116,7 +117,7 @@ std::shared_ptr<T> GameObject::GetComponent() const {
 	}
 }
 
-template <IsComponent T>
+template <typename T>
 void GameObject::RemoveComponent() {
 	auto it = components.find(typeid(T));
 	if (it != components.end()) {
@@ -127,7 +128,7 @@ void GameObject::RemoveComponent() {
 	}
 }
 
-template <IsComponent T>
+template <typename T>
 bool GameObject::HasComponent() const {
 	return components.find(typeid(T)) != components.end();
 }
