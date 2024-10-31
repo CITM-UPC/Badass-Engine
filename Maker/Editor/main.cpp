@@ -17,8 +17,8 @@ using namespace std;
 #include <assimp/cimport.h>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-#include "Engine/Camera.h"
-#include "Engine/Mesh.h"
+#include "../Engine/Camera.h"
+#include "../Engine/Mesh.h"
 #include <vector>
 #include <array>
 #include <chrono>

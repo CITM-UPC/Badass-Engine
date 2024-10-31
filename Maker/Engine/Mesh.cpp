@@ -162,11 +162,13 @@ void Mesh::LoadFile(const char* file_path)
 			aiMesh* mesh = scene->mMeshes[i];
 
 			// Copy vertices
+			//gui->logMessage("Loading mesh vertices");
 			for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
 				all_vertices.push_back(glm::vec3(mesh->mVertices[j].x, mesh->mVertices[j].y, mesh->mVertices[j].z));
 			}
 
 			// Copy indices
+			//gui->logMessage("Loading mesh indices");
 			for (unsigned int j = 0; j < mesh->mNumFaces; j++) {
 				aiFace& face = mesh->mFaces[j];
 				for (unsigned int k = 0; k < face.mNumIndices; k++) {
@@ -175,6 +177,7 @@ void Mesh::LoadFile(const char* file_path)
 			}
 
 			// Copy texture coordinates
+			//gui->logMessage("Loading mesh texture coordinates");
 			if (mesh->HasTextureCoords(0)) {
 				for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
 					all_texCoords.push_back(glm::vec2(mesh->mTextureCoords[0][j].x, -mesh->mTextureCoords[0][j].y));
@@ -182,6 +185,7 @@ void Mesh::LoadFile(const char* file_path)
 			}
 
 			// Copy normals
+			//gui->logMessage("Loading mesh normals");
 			if (mesh->HasNormals()) {
 				for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
 					all_normals.push_back(glm::vec3(mesh->mNormals[j].x, mesh->mNormals[j].y, mesh->mNormals[j].z));
@@ -189,6 +193,7 @@ void Mesh::LoadFile(const char* file_path)
 			}
 
 			// Copy colors
+			//gui->logMessage("Loading mesh colors");
 			if (mesh->HasVertexColors(0)) {
 				for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
 					all_colors.push_back(glm::u8vec3(mesh->mColors[0][j].r * 255, mesh->mColors[0][j].g * 255, mesh->mColors[0][j].b * 255));

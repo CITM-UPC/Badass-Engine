@@ -9,8 +9,8 @@
 #include "TransformComponent.h"
 #include "Texture.h"
 #include "BoundingBox.h"
-#include "Mesh.h"
 #include "Component.h"
+#include "Mesh.h"
 
 class GameObject : public std::enable_shared_from_this<GameObject>, public TreeExt<GameObject>
 {
