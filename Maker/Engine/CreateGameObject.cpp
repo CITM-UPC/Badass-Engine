@@ -58,6 +58,7 @@ GameObject GameObject::createCube()
     mesh->loadTexCoords(texCoords.data(), texCoords.size());
 
     GameObject gameObject;
+    gameObject.meshPath = "Default Cube";
     gameObject.AddComponent<MeshLoader>()->SetMesh(mesh);
     gameObject.SetName("Cube");
     gameObject.setMesh(mesh);
@@ -116,6 +117,7 @@ GameObject GameObject::createSphere() {
     mesh->loadTexCoords(texCoords.data(), texCoords.size());
 
     GameObject gameObject;
+    gameObject.meshPath = "Default Cube Sphere";
     gameObject.AddComponent<MeshLoader>()->SetMesh(mesh);
     gameObject.SetName("Sphere");
     gameObject.setMesh(mesh);
@@ -184,6 +186,7 @@ GameObject GameObject::createCylinder()
     mesh->loadTexCoords(texCoords.data(), texCoords.size());
 
     GameObject gameObject;
+    gameObject.meshPath = "Default Cylinder";
     gameObject.AddComponent<MeshLoader>()->SetMesh(mesh);
     gameObject.SetName("Cylinder");
     gameObject.setMesh(mesh);

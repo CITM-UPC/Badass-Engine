@@ -493,6 +493,7 @@ int main(int argc, char* argv[]) {
 
 	mesh->LoadFile("BakerHouse.fbx");
 	GameObject go;
+	go.meshPath = "BakerHouse.fbx";
 	go.AddComponent<MeshLoader>()->SetMesh(mesh);
 	go.setMesh(mesh);
 	imageTexture->LoadTexture("Baker_house.png");
@@ -529,6 +530,7 @@ int main(int argc, char* argv[]) {
 				if (extension == "obj" || extension == "fbx" || extension == "dae") {
 					mesh->LoadFile(dropped_filePath);
 					GameObject go;
+					go.meshPath = dropped_filePath;
 					go.AddComponent<MeshLoader>()->SetMesh(mesh);
 					go.setMesh(mesh);
 					scene.emplaceChild(go);
