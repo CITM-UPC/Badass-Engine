@@ -497,6 +497,7 @@ int main(int argc, char* argv[]) {
 	go.AddComponent<MeshLoader>()->SetMesh(mesh);
 	go.setMesh(mesh);
 	imageTexture->LoadTexture("Baker_house.png");
+	go.texturePath = "Baker_house.png";
 	texture->setImage(imageTexture);
 	go.GetComponent<MeshLoader>()->GetMesh()->deleteCheckerTexture();
 	go.GetComponent<MeshLoader>()->SetImage(imageTexture);
@@ -541,6 +542,7 @@ int main(int argc, char* argv[]) {
 					for (auto& child : scene.children()) {
 						if (isMouseOverGameObject(child, mouseX, mouseY)) {
 							imageTexture->LoadTexture(dropped_filePath);
+							go.texturePath = dropped_filePath;
 							texture->setImage(imageTexture);
 							child.GetComponent<MeshLoader>()->GetMesh()->deleteCheckerTexture();
 							child.GetComponent<MeshLoader>()->SetImage(imageTexture);

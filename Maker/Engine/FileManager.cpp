@@ -18,6 +18,7 @@ void FileManager::LoadFile(const char* path, GameObject& go)
 		auto imageTexture = std::make_shared<Image>();
 		auto texture = std::make_shared<Texture>();
 		imageTexture->LoadTexture(path);
+		go.texturePath = path;
 		texture->setImage(imageTexture);
 		go.GetComponent<MeshLoader>()->GetMesh()->deleteCheckerTexture();
 		go.GetComponent<MeshLoader>()->SetImage(imageTexture);
