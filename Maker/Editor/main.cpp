@@ -329,7 +329,10 @@ static void handleKeyboardInput() {
 			camera.transform().translate(glm::vec3(0, moveSpeed, 0));
 		}
 		if (state[SDL_SCANCODE_LSHIFT]) {
-			moveSpeed *= 2;
+			moveSpeed = 0.2;
+		}
+		else {
+			moveSpeed = 0.1;
 		}
 	}
 
