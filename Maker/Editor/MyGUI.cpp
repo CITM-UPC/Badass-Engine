@@ -155,6 +155,16 @@ void MyGUI::render() {
                 //selectedGameObject->_transform->SetRotation(glm::vec3(rotationArray[0], rotationArray[1], rotationArray[2]));
             }
 
+            //Display scale
+            ImGui::Text("Scale");
+            glm::vec3 scale = selectedGameObject->_transform->GetScale();
+            float scaleArray[3] = { scale.x, scale.y, scale.z };
+
+			if (ImGui::InputFloat3("##scale", scaleArray)) {
+				//selectedGameObject->_transform->SetScale(glm::vec3(scaleArray[0], scaleArray[1], scaleArray[2]));
+			}
+
+
             if (ImGui::Checkbox("Draw Texture", &selectedGameObject->GetComponent<MeshLoader>()->drawTexture)) {
                 if (selectedGameObject->GetComponent<MeshLoader>()->drawTexture)
                 {
