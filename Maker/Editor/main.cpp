@@ -522,7 +522,7 @@ int main(int argc, char* argv[]) {
 	ilInit();
 	iluInit();
 	ilutInit();
-	MyWindow window("SDL2 Simple Example", WINDOW_SIZE.x, WINDOW_SIZE.y);
+	MyWindow window("Badass Engine", WINDOW_SIZE.x, WINDOW_SIZE.y);
 	MyGUI gui(window.windowPtr(), window.contextPtr());
 	init_opengl();
 
