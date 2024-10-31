@@ -22,6 +22,7 @@ public:
 	
 	std::string name;
 	std::string meshPath;
+	std::string texturePath;
 	bool drawTexture = true;
 	
 
