@@ -59,6 +59,22 @@ void MyGUI::render() {
             ImGui::EndMenu(); // Close the "File" menu
 
         }
+        if (ImGui::BeginMenu("Create"))
+        {
+			if (ImGui::MenuItem("Cube"))
+			{
+				// Create a new GameObject with a cube mesh
+			}
+            if (ImGui::MenuItem("Sphere"))
+            {
+				// Create a new GameObject with a sphere mesh
+            }
+            if (ImGui::MenuItem("Cylinder"))
+            {
+				// Create a new GameObject with a cylinder mesh
+            }
+            ImGui::EndMenu();
+        }
         if (ImGui::BeginMenu("Help")) {
             if (ImGui::MenuItem("About")) {
                 // Open a webpage when "About" is clicked
@@ -66,7 +82,7 @@ void MyGUI::render() {
                 SDL_OpenURL(url);
             }
 
-            ImGui::EndMenu(); // Close the "Edit" menu
+            ImGui::EndMenu(); // Close the "Help" menu
         }
         ImGui::EndMainMenuBar(); // Close the main menu bar
     }
