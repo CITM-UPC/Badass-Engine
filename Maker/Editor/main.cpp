@@ -552,8 +552,11 @@ int main(int argc, char* argv[]) {
 	auto texture = std::make_shared<Texture>();
 	std::string extension;
 
+	scene.name = "Scene";
+
 	mesh->LoadFile("Assets/BakerHouse.fbx");
 	GameObject go;
+	go.id = 1;
 	go.meshPath = "Assets/BakerHouse.fbx";
 	go.AddComponent<MeshLoader>()->SetMesh(mesh);
 	go.setMesh(mesh);
