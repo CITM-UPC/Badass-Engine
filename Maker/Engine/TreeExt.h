@@ -23,6 +23,22 @@ public:
 		_children.back()._parent = static_cast<T*>(this);
 		return _children.back();
 	}
+
+	//template <typename ...Args>
+	auto& setParent(T& newParent) {
+		// Check if the object already has a parent
+		if (_parent) {
+			// Remove the object from the current parent's children
+			_parent->_children.remove(*static_cast<T*>(this));
+		}
+
+		// Set the new parent
+		_parent = &newParent;
+
+		// Add the object to the new parent's children
+		_parent->emplaceChild(*static_cast<T*>(this));
+		return _parent;
+	}
 	
 
 	void removeChild(const T& child) { return _children.remove(std::forward(child)); }

@@ -220,7 +220,19 @@ void MyGUI::render() {
                 if (filePath) {
                     GameObject go;
                     fileManager.LoadFile(filePath, go);
-                    scene.emplaceChild(go);
+                    
+                    // This is for testing parenting
+                    // Get the first child of the scene
+                    auto& children = scene.getChildren();
+                    if (!children.empty()) {
+                        GameObject& firstChild = scene.getChildren().front();
+                        firstChild.emplaceChild(go);
+                        go.setParent(firstChild);
+                    }
+                    else {
+                        // If there are no children, add the new GameObject to the scene
+                        scene.emplaceChild(go);
+                    }
                 }
             }
             if (ImGui::MenuItem("Quit")) {

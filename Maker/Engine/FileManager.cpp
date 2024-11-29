@@ -12,6 +12,12 @@ void FileManager::LoadFile(const char* path, GameObject& go)
 		go.meshPath = path;
 		go.AddComponent<MeshLoader>()->SetMesh(mesh);
 		go.setMesh(mesh);
+
+		// Set ID
+		int newID = scene.children().back().id;
+		go.id = newID + 1;
+
+		
 	}
 	else if (extension == "png" || extension == "jpg" || extension == "bmp") {
 		// Load Texture

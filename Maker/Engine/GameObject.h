@@ -21,6 +21,7 @@ public:
 	glm::u8vec3 _color = glm::u8vec3(255, 255, 255);
 	Texture _texture;
 	
+	int id = 0;
 	std::string name;
 	std::string meshPath;
 	std::string texturePath;
@@ -50,8 +51,11 @@ public:
 
 	auto& GetTransform() const { return _transform; }
 
-	/*const auto& transform() const { return _transform; }
-	auto& transform() { return _transform; }*/
+	bool operator==(const GameObject& other) const {
+		return this->id == other.id;
+	}
+
+	int getId() const { return id; }
 	const auto& color() const { return _color; }
 	auto& color() { return _color; }
 	const auto& texture() const { return _texture; }

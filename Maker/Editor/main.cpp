@@ -205,18 +205,34 @@ void configureCamera() {
 	glLoadMatrixd(glm::value_ptr(viewMatrix));
 }
 
+void drawGameObjectAndChildren(GameObject& gameObject) {
+	// Draw the current game object
+	gameObject.draw();
+
+	// Recursively draw all children
+	for (auto& child : gameObject.children()) {
+		drawGameObjectAndChildren(child);
+	}
+}
+
+void drawScene() {
+	// Draw all top-level children of the scene
+	for (auto& child : scene.children()) {
+		drawGameObjectAndChildren(child);
+	}
+}
+
 static void display_func() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	configureCamera();
 	drawFloorGrid(16, 0.25);
 
-	for (auto& child : scene.children()) {
-		child.draw();
-	}
+	drawScene();
 
 	scene.drawDebug(scene);
 
 	cout << "Number of children: " << scene.children().size() << endl;
+	
 }
 
 static void init_opengl() {
@@ -548,6 +564,7 @@ int main(int argc, char* argv[]) {
 	go.GetComponent<MeshLoader>()->SetImage(imageTexture);
 	go.GetComponent<MeshLoader>()->SetTexture(texture);
 	go.SetName("BakerHouse");
+	go._transform.SetPosition(vec3(2, 0, 0));
 	scene.emplaceChild(go);
 
 	SDL_EventState(SDL_DROPFILE, SDL_ENABLE);

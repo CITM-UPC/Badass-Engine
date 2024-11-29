@@ -6,6 +6,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "Mesh.h"
 #include "GameObject.h"
+#include "Scene.h"
 
 class FileManager
 {
