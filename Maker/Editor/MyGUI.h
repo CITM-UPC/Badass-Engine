@@ -1,7 +1,7 @@
 #pragma once
 
 #include "MyWindow.h"
-#include "../Engine/Scene.h"
+#include "Engine/Scene.h"
 #include <list>
 #include <string>
 #include <vector> // Include the vector header
