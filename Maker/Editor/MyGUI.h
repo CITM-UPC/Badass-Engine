@@ -23,10 +23,8 @@ public:
     void renderInspectorWindow();
     void render();
     void processEvent(const SDL_Event& event);
-    void logMessage(const std::string& message); 
     void renderConsoleWindow();
 private:
-    std::vector<std::string> logMessages;
 
 
 

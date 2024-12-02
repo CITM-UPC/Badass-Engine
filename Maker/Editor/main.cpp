@@ -29,6 +29,7 @@ using namespace std;
 #include <glm/gtc/type_ptr.hpp>
 #include <SDL2/SDL_events.h>
 #include <glm/gtc/matrix_transform.hpp>
+#include "Engine/log.h"
 
 
 
@@ -534,7 +535,9 @@ bool isMouseOverGameObject(const GameObject& go, int mouseX, int mouseY) {
 
 int main(int argc, char* argv[]) {
 
-
+	Log::getInstance().logMessage("Hello World!");
+	Log::getInstance().logMessage("Hello World! 2");
+	Log::getInstance().logMessage("Hello World! 3");
 	ilInit();
 	iluInit();
 	ilutInit();

@@ -7,7 +7,7 @@
 #include <imgui_impl_sdl2.h>
 #include <imgui_impl_opengl3.h>
 #include <tinyfiledialogs/tinyfiledialogs.h> 
-
+#include "Engine/Log.h"
 
 
 
@@ -30,15 +30,13 @@ MyGUI::~MyGUI() {
 
 FileManager fileManager;
 GameObject* selectedGameObject = nullptr; // Define selectedGameObject
-void MyGUI::logMessage(const std::string& message) {
-    logMessages.push_back(message);
-}
+
 
 void MyGUI::renderConsoleWindow() {
     ImGui::SetNextWindowSize(ImVec2(480, 200), ImGuiCond_Appearing);
     ImGui::SetNextWindowPos(ImVec2(300, 450), ImGuiCond_Appearing);
     if (ImGui::Begin("Console", NULL)) {
-        for (const auto& message : logMessages) {
+        for (const auto& message : Log::getInstance().logMessages) {
             ImGui::TextUnformatted(message.c_str());
         }
     }
