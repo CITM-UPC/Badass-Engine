@@ -84,8 +84,10 @@ void MyGUI::renderConfigurationWindow() {
             // Software versions
             ImGui::Text("SDL Version: %d.%d.%d", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL);
             ImGui::Text("OpenGL Version: %s", glGetString(GL_VERSION));
-            //ImGui::Text("DevIL Version: %s", IL_VERSION); //It creates a crash, are we using DevIL?
-        }
+            int major = IL_VERSION / 100;
+            int minor = (IL_VERSION / 10) % 10;
+            int patch = IL_VERSION % 10;
+            ImGui::Text("DevIL Version: %d.%d.%d", major, minor, patch);        }
     }
     ImGui::End();
 }
