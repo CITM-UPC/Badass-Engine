@@ -90,40 +90,64 @@ void MyGUI::renderConfigurationWindow() {
     ImGui::End();
 }
 
+
+
+
 void MyGUI::renderGameObjectWindow()
 {
     ImGui::SetNextWindowSize(ImVec2(300, 700), ImGuiCond_Always);
     ImGui::SetNextWindowPos(ImVec2(0, 20), ImGuiCond_Always);
     if (ImGui::Begin("Gameobjects", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove)) {
-        for (auto& child : scene.getChildren()) {
-            static char newName[128] = "";
-            static bool renaming = false;
-            static GameObject* renamingObject = nullptr;
-
-            if (renaming && renamingObject == &child) {
-                ImGui::SetKeyboardFocusHere();
-                if (ImGui::InputText("##rename", newName, IM_ARRAYSIZE(newName), ImGuiInputTextFlags_EnterReturnsTrue)) {
-                    child.name = newName;
-                    renaming = false;
-                }
-                if (ImGui::IsItemDeactivated() || ImGui::IsKeyPressed(ImGuiKey_Escape)) {
-                    renaming = false;
-                }
-            }
-            else {
-                if (ImGui::Selectable(child.name.c_str(), selectedGameObject == &child)) {
-                    selectedGameObject = &child;
-                }
-                if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
-                    renaming = true;
-                    renamingObject = &child;
-                    strcpy_s(newName, child.name.c_str());
-                }
-            }
+        for (auto& gameObject : scene.getChildren()) {
+            renderGameObjectNode(&gameObject);
         }
     }
     ImGui::End();
 }
+
+
+void MyGUI::renderGameObjectNode(GameObject* gameObject)
+{
+    ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
+    if (selectedGameObject == gameObject) {
+        nodeFlags |= ImGuiTreeNodeFlags_Selected;
+    }
+
+    bool nodeOpen = ImGui::TreeNodeEx(gameObject->name.c_str(), nodeFlags);
+    if (ImGui::IsItemClicked()) {
+        selectedGameObject = gameObject;
+    }
+
+    static char newName[128] = "";
+    static bool renaming = false;
+    static GameObject* renamingObject = nullptr;
+
+    if (renaming && renamingObject == gameObject) {
+        ImGui::SetKeyboardFocusHere();
+        if (ImGui::InputText("##rename", newName, IM_ARRAYSIZE(newName), ImGuiInputTextFlags_EnterReturnsTrue)) {
+            gameObject->name = newName;
+            renaming = false;
+        }
+        if (ImGui::IsItemDeactivated() || ImGui::IsKeyPressed(ImGuiKey_Escape)) {
+            renaming = false;
+        }
+    }
+    else {
+        if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
+            renaming = true;
+            renamingObject = gameObject;
+            strcpy_s(newName, gameObject->name.c_str());
+        }
+    }
+
+    if (nodeOpen) {
+        for (auto& child : gameObject->children()) {
+            renderGameObjectNode(&child);
+        }
+        ImGui::TreePop();
+    }
+}
+
 
 void MyGUI::renderInspectorWindow()
 {

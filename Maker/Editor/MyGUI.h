@@ -24,10 +24,13 @@ public:
     void render();
     void processEvent(const SDL_Event& event);
     void renderConsoleWindow();
+    void renderGameObjectNode(GameObject* gameObject);
 private:
 
-
+    
 
 };
 
 extern MyGUI* gui; // Define myGUI
+
+
