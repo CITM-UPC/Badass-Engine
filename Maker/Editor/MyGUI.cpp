@@ -74,8 +74,7 @@ void MyGUI::renderConfigurationWindow() {
         // Information output
         if (ImGui::CollapsingHeader("Information")) {
             // Memory consumption
-            //ImGui::Text("Memory Consumption: %.2f MB", getMemoryConsumption());
-
+            ImGui::Text("%s", memoryUsage.c_str());
             // Hardware detection
             ImGui::Text("CPU Cores: %d", SDL_GetCPUCount());
             ImGui::Text("RAM: %d MB", SDL_GetSystemRAM());

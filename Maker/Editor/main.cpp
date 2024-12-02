@@ -30,7 +30,23 @@ using namespace std;
 #include <SDL2/SDL_events.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include "Engine/log.h"
+#include <windows.h>
+#include <psapi.h>
+#include <iomanip>
+#include <sstream>
 
+void GetMemoryUsage(MyGUI& gui) {
+	PROCESS_MEMORY_COUNTERS_EX pmc;
+	if (GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc))) {
+		double privateUsageMB = pmc.PrivateUsage / (1024.0 * 1024.0);
+		std::stringstream ss;
+		ss << std::fixed << std::setprecision(2) << privateUsageMB;
+		gui.memoryUsage = "Memory consumption: " + ss.str() + " MB";
+	}
+	else {
+		gui.memoryUsage = "Failed to get memory usage information.";
+	}
+}
 
 
 using hrclock = chrono::high_resolution_clock;
@@ -576,6 +592,7 @@ int main(int argc, char* argv[]) {
 	SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 
 	while (window.isOpen()) {
+		GetMemoryUsage(gui);
 		const auto t0 = hrclock::now();
 		handleKeyboardInput();
 		display_func();

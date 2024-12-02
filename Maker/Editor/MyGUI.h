@@ -25,6 +25,8 @@ public:
     void processEvent(const SDL_Event& event);
     void renderConsoleWindow();
     void renderGameObjectNode(GameObject* gameObject);
+
+    string memoryUsage;
 private:
 
     
