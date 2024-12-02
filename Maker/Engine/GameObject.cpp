@@ -1,6 +1,9 @@
 #include "GameObject.h"
 #include <GL/glew.h>
 #include <iostream>
+#include <string>
+#include "Log.h"
+
 using namespace std;
 
 GameObject::GameObject(const std::string& name) : name(name), cachedComponentType(typeid(Component))
@@ -38,7 +41,11 @@ std::string GameObject::GetName() const
 
 void GameObject::SetName(const std::string& name)
 {
+	string newName = name;
+	string oldName = this->name;
 	this->name = name;
+	string message = "GameObject " + oldName + " renamed to " + newName;
+	Log::getInstance().logMessage(message);
 }
 
 bool GameObject::CompareTag(const std::string& tag) const
