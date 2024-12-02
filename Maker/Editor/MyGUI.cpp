@@ -112,7 +112,7 @@ void MyGUI::renderGameObjectNode(GameObject* gameObject)
         nodeFlags |= ImGuiTreeNodeFlags_Selected;
     }
 
-    bool nodeOpen = ImGui::TreeNodeEx(gameObject->name.c_str(), nodeFlags);
+    bool nodeOpen = ImGui::TreeNodeEx(gameObject->GetName().c_str(), nodeFlags);
     if (ImGui::IsItemClicked()) {
         selectedGameObject = gameObject;
     }
@@ -124,7 +124,7 @@ void MyGUI::renderGameObjectNode(GameObject* gameObject)
     if (renaming && renamingObject == gameObject) {
         ImGui::SetKeyboardFocusHere();
         if (ImGui::InputText("##rename", newName, IM_ARRAYSIZE(newName), ImGuiInputTextFlags_EnterReturnsTrue)) {
-            gameObject->name = newName;
+            gameObject->SetName(newName);
             renaming = false;
         }
         if (ImGui::IsItemDeactivated() || ImGui::IsKeyPressed(ImGuiKey_Escape)) {
@@ -154,7 +154,7 @@ void MyGUI::renderInspectorWindow()
     ImGui::SetNextWindowPos(ImVec2(780, 20), ImGuiCond_Always);
     if (ImGui::Begin("Inspector", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove)) {
         if (selectedGameObject) {
-            ImGui::Text("Selected GameObject: %s", selectedGameObject->name.c_str());
+            ImGui::Text("Selected GameObject: %s", selectedGameObject->GetName().c_str());
             ImGui::Separator();
             // Display position
             ImGui::Text("Position");
@@ -262,7 +262,7 @@ void MyGUI::render() {
                     std::filesystem::path path(filePath);
                     std::string fileName = path.stem().string(); // Extract the file name without extension
                     GameObject go;
-                    go.name = fileName; // Use the extracted file name
+                    go.SetName(fileName); // Use the extracted file name
                     fileManager.LoadFile(filePath, go);
 					scene.emplaceChild(go);
 					// This is for testing parenting, comment the lines below if you don't want to test parenting
@@ -332,17 +332,17 @@ void MyGUI::render() {
     // Ensure no two GameObjects have the same name
     std::unordered_set<std::string> nameSet;
     for (auto& child : scene.getChildren()) {
-        if (nameSet.find(child.name) != nameSet.end()) {
+        if (nameSet.find(child.GetName()) != nameSet.end()) {
             // If a duplicate name is found, append a unique suffix
             int suffix = 1;
-            std::string newName = child.name + "_" + std::to_string(suffix);
+            std::string newName = child.GetName() + "_" + std::to_string(suffix);
             while (nameSet.find(newName) != nameSet.end()) {
                 suffix++;
-                newName = child.name + "_" + std::to_string(suffix);
+                newName = child.GetName() + "_" + std::to_string(suffix);
             }
-            child.name = newName;
+            child.SetName(newName);
         }
-        nameSet.insert(child.name);
+        nameSet.insert(child.GetName());
     }
     //ImGui::ShowDemoWindow();
 	//render configuration window
