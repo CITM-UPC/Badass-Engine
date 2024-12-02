@@ -7,6 +7,7 @@
 #include <imgui_impl_sdl2.h>
 #include <imgui_impl_opengl3.h>
 #include <tinyfiledialogs/tinyfiledialogs.h> 
+#include <filesystem>
 #include "Engine/Log.h"
 
 
@@ -241,7 +242,10 @@ void MyGUI::render() {
                     0
                 );
                 if (filePath) {
+                    std::filesystem::path path(filePath);
+                    std::string fileName = path.stem().string(); // Extract the file name without extension
                     GameObject go;
+                    go.name = fileName; // Use the extracted file name
                     fileManager.LoadFile(filePath, go);
 					scene.emplaceChild(go);
 					// This is for testing parenting, comment the lines below if you don't want to test parenting
