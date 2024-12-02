@@ -163,7 +163,7 @@ void MyGUI::renderInspectorWindow()
                       static_cast<float>(selectedGameObject->_transform.pos().z) };
 
             if (ImGui::InputFloat3("##position", position)) {
-                //selectedGameObject->_transform->Translate(glm::dvec3(position[0], position[1], position[2]));
+				selectedGameObject->_transform.SetPosition(glm::dvec3(position[0], position[1], position[2]));
             }
 
             // Display rotation
@@ -172,7 +172,7 @@ void MyGUI::renderInspectorWindow()
             float rotationArray[3] = { rotation.x, rotation.y, rotation.z };
 
             if (ImGui::InputFloat3("##rotation", rotationArray)) {
-                //selectedGameObject->_transform->SetRotation(glm::vec3(rotationArray[0], rotationArray[1], rotationArray[2]));
+                //selectedGameObject->_transform.SetRotation(glm::vec3(rotationArray[0], rotationArray[1], rotationArray[2]));
             }
 
             //Display scale
