@@ -92,9 +92,6 @@ void MyGUI::renderConfigurationWindow() {
     ImGui::End();
 }
 
-
-
-
 void MyGUI::renderGameObjectWindow()
 {
     ImGui::SetNextWindowSize(ImVec2(300, 700), ImGuiCond_Always);
@@ -197,6 +194,26 @@ void MyGUI::renderInspectorWindow()
                 ImGui::Text("Texture Info");
                 ImGui::Text("Texture Path: %s", selectedGameObject->texturePath.c_str());
                 ImGui::Text("Texture size: %d x %d", selectedGameObject->GetComponent<MeshLoader>()->GetImage()->width(), selectedGameObject->GetComponent<MeshLoader>()->GetImage()->height());
+            }
+			else
+			{
+				ImGui::Text("No Texture loaded.");
+			}
+
+            // Add Texture button
+            if (ImGui::Button("Texture")) {
+                const char* filterPatterns[1] = { "*.png" };
+                const char* filePath = tinyfd_openFileDialog(
+                    "Select a texture file",
+                    "Assets",
+                    1,
+                    filterPatterns,
+                    NULL,
+                    0
+                );
+                if (filePath) {
+					Log::getInstance().logMessage("Didac mete tu la funcion que yo no se como se hace");
+                }
             }
             
             if (ImGui::Checkbox("Draw Texture", &selectedGameObject->GetComponent<MeshLoader>()->drawTexture)) {
