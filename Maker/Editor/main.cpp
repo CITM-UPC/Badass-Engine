@@ -58,7 +58,7 @@ static const ivec2 WINDOW_SIZE(1280, 720);
 static const unsigned int FPS = 60;
 static const auto FRAME_DT = 1.0s / FPS;
 
-static Camera camera;
+static GameObject mainCamera;
 glm::dmat4 projectionMatrix;
 glm::dmat4 viewMatrix;
 
@@ -112,10 +112,10 @@ vec3 TurnScreenCoordinates(int mouseX, int mouseY) {
 
 	// Calcular el punto 3D de intersección del rayo con un plano en la escena (ej., plano del suelo)
 	float planeHeight = 0.0f; // Por ejemplo, un plano en Y = 0
-	float t = (planeHeight - camera.transform().pos().y) / ray_world.y;
+	float t = (planeHeight - mainCamera.GetComponent<CameraComponent>()->camera().transform().pos().y) / ray_world.y;
 
 	// Calcular la posición del punto en el plano de la intersección
-	glm::vec3 intersectionPoint = glm::vec3(camera.transform().pos()) + t * ray_world;
+	glm::vec3 intersectionPoint = glm::vec3(mainCamera.GetComponent<CameraComponent>()->camera().transform().pos()) + t * ray_world;
 
 	return intersectionPoint;
 }
@@ -212,8 +212,8 @@ static void drawFloorGrid(int size, double step) {
 }
 
 void configureCamera() {
-	projectionMatrix = camera.projection();
-	viewMatrix = camera.view();
+	projectionMatrix = mainCamera.GetComponent<CameraComponent>()->camera().projection();
+	viewMatrix = mainCamera.GetComponent<CameraComponent>()->camera().view();
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadMatrixd(glm::value_ptr(projectionMatrix));
@@ -262,14 +262,14 @@ static void init_opengl() {
 
 static void reshape_func(int width, int height) {
 	glViewport(0, 0, width, height);
-	camera.aspect = static_cast<double>(width) / height;
+	mainCamera.GetComponent<CameraComponent>()->camera().aspect = static_cast<double>(width) / height;
 	glMatrixMode(GL_PROJECTION);
-	glLoadMatrixd(&camera.projection()[0][0]);
+	glLoadMatrixd(&mainCamera.GetComponent<CameraComponent>()->camera().projection()[0][0]);
 }
 
 static void mouseWheel_func(int direction) {
 	// Mueve la cámara hacia adelante o hacia atrás
-	camera.transform().translate(vec3(0, 0, direction * 0.1));
+	mainCamera.GetComponent<CameraComponent>()->camera().transform().translate(vec3(0, 0, direction * 0.1));
 }
 
 glm::vec2 getMousePosition() {
@@ -291,7 +291,7 @@ void orbitCamera(const vec3& target, int deltaX, int deltaY) {
 	if (pitch < -maxPitch) pitch = -maxPitch;
 
 	
-	float distance = glm::length(camera.transform().pos() - target);
+	float distance = glm::length(mainCamera.GetComponent<CameraComponent>()->camera().transform().pos() - target);
 
 	
 	vec3 newPosition;
@@ -300,8 +300,8 @@ void orbitCamera(const vec3& target, int deltaX, int deltaY) {
 	newPosition.z = target.z + distance * cos(glm::radians(pitch)) * cos(glm::radians(yaw));
 
 	
-	camera.transform().SetPosition(newPosition);
-	camera.transform().lookAt(target);
+	mainCamera.GetComponent<CameraComponent>()->camera().transform().SetPosition(newPosition);
+	mainCamera.GetComponent<CameraComponent>()->camera().transform().lookAt(target);
 }
 
 static void mouseButton_func(int button, int state, int x, int y) {
@@ -344,22 +344,22 @@ static void handleKeyboardInput() {
 	if (rightMousePressed) {
 
 		if (state[SDL_SCANCODE_W]) {
-			camera.transform().translate(glm::vec3(0, 0, moveSpeed));
+			mainCamera.GetComponent<CameraComponent>()->camera().transform().translate(glm::vec3(0, 0, moveSpeed));
 		}
 		if (state[SDL_SCANCODE_S]) {
-			camera.transform().translate(glm::vec3(0, 0, -moveSpeed));
+			mainCamera.GetComponent<CameraComponent>()->camera().transform().translate(glm::vec3(0, 0, -moveSpeed));
 		}
 		if (state[SDL_SCANCODE_A]) {
-			camera.transform().translate(glm::vec3(moveSpeed, 0, 0));
+			mainCamera.GetComponent<CameraComponent>()->camera().transform().translate(glm::vec3(moveSpeed, 0, 0));
 		}
 		if (state[SDL_SCANCODE_D]) {
-			camera.transform().translate(glm::vec3(-moveSpeed, 0, 0));
+			mainCamera.GetComponent<CameraComponent>()->camera().transform().translate(glm::vec3(-moveSpeed, 0, 0));
 		}
 		if (state[SDL_SCANCODE_E]) {
-			camera.transform().translate(glm::vec3(0, -moveSpeed, 0));
+			mainCamera.GetComponent<CameraComponent>()->camera().transform().translate(glm::vec3(0, -moveSpeed, 0));
 		}
 		if (state[SDL_SCANCODE_Q]) {
-			camera.transform().translate(glm::vec3(0, moveSpeed, 0));
+			mainCamera.GetComponent<CameraComponent>()->camera().transform().translate(glm::vec3(0, moveSpeed, 0));
 		}
 		if (state[SDL_SCANCODE_LSHIFT]) {
 			moveSpeed = 0.2;
@@ -371,8 +371,8 @@ static void handleKeyboardInput() {
 
 	if (state[SDL_SCANCODE_F] && selectedGameObject != nullptr) {
 		isFpressed != isFpressed;
-		camera.transform().pos() = selectedGameObject->GetComponent<TransformComponent>()->transform().pos() + vec3(0, 1, 4);
-		camera.transform().lookAt(selectedGameObject->GetComponent<TransformComponent>()->transform().pos());
+		mainCamera.GetComponent<CameraComponent>()->camera().transform().pos() = selectedGameObject->GetComponent<TransformComponent>()->transform().pos() + vec3(0, 1, 4);
+		mainCamera.GetComponent<CameraComponent>()->camera().transform().lookAt(selectedGameObject->GetComponent<TransformComponent>()->transform().pos());
 	}
 	if (state[SDL_SCANCODE_LALT]) {
 		altKeyPressed = true;
@@ -381,7 +381,7 @@ static void handleKeyboardInput() {
 		altKeyPressed = false;
 	}
 
-	camera.transform().alignCamera();
+	mainCamera.GetComponent<CameraComponent>()->camera().transform().alignCamera();
 
 	/*if (leftMousePressed) {
 
@@ -405,8 +405,8 @@ static void mouseMotion_func(int x, int y) {
 		lastMousePosition = ivec2(x, y);
 
 
-		camera.transform().translate(vec3(delta.x * 0.01, 0, -delta.y * 0.01));
-		camera.transform().translate(vec3(0, delta.y * 0.01, 0));
+		mainCamera.GetComponent<CameraComponent>()->camera().transform().translate(vec3(delta.x * 0.01, 0, -delta.y * 0.01));
+		mainCamera.GetComponent<CameraComponent>()->camera().transform().translate(vec3(0, delta.y * 0.01, 0));
 	}
 
 	if (leftMousePressed && altKeyPressed && selectedGameObject == nullptr) {
@@ -437,11 +437,11 @@ static void mouseMotion_func(int x, int y) {
 		if (pitch < -MAX_PITCH) pitch = -MAX_PITCH;
 
 		// Aplicar las rotaciones a la cámara
-		camera.transform().rotate(glm::radians(-deltaX * adaptiveSensitivity), glm::vec3(0, -1, 0));
-		camera.transform().rotate(glm::radians(deltaY * adaptiveSensitivity), glm::vec3(-1, 0, 0));
+		mainCamera.GetComponent<CameraComponent>()->camera().transform().rotate(glm::radians(-deltaX * adaptiveSensitivity), glm::vec3(0, -1, 0));
+		mainCamera.GetComponent<CameraComponent>()->camera().transform().rotate(glm::radians(deltaY * adaptiveSensitivity), glm::vec3(-1, 0, 0));
 
 		// Realinear la cámara después de la rotación
-		camera.transform().alignCamera();
+		mainCamera.GetComponent<CameraComponent>()->camera().transform().alignCamera();
 	}
 	else if (leftMousePressed && altKeyPressed && selectedGameObject != nullptr) {
 		// Calcular el desplazamiento del ratón
@@ -480,8 +480,8 @@ static void mouseMotion_func(int x, int y) {
 		);
 
 		// Actualizar la posición de la cámara y orientar hacia el objeto seleccionado
-		camera.transform().SetPosition(orbitPosition);
-		camera.transform().lookAt(selectedGameObject->GetComponent<TransformComponent>()->transform().pos());
+		mainCamera.GetComponent<CameraComponent>()->camera().transform().SetPosition(orbitPosition);
+		mainCamera.GetComponent<CameraComponent>()->camera().transform().lookAt(selectedGameObject->GetComponent<TransformComponent>()->transform().pos());
 	}
 	
 	if (rightMousePressed) {
@@ -505,15 +505,15 @@ static void mouseMotion_func(int x, int y) {
 				if (pitch < -MAX_PITCH) pitch = -MAX_PITCH;
 
 				// Aplicar las rotaciones utilizando interpolación suave
-				camera.transform().rotate(glm::radians(-deltaX * adaptiveSensitivity), glm::vec3(0, -1, 0));
-				camera.transform().rotate(glm::radians(deltaY * adaptiveSensitivity), glm::vec3(-1, 0, 0));
+				mainCamera.GetComponent<CameraComponent>()->camera().transform().rotate(glm::radians(-deltaX * adaptiveSensitivity), glm::vec3(0, -1, 0));
+				mainCamera.GetComponent<CameraComponent>()->camera().transform().rotate(glm::radians(deltaY * adaptiveSensitivity), glm::vec3(-1, 0, 0));
 
 				// Guardar la última posición del ratón
 				lastMouseX = x;
 				lastMouseY = y;
 
 				// Realinear la cámara después de la rotación
-				camera.transform().alignCamera();
+				mainCamera.GetComponent<CameraComponent>()->camera().transform().alignCamera();
 			}
 		}
 	}
@@ -537,7 +537,7 @@ std::string getFileExtension(const std::string& filePath) {
 // Function to check if the mouse is over a GameObject
 bool isMouseOverGameObject(const GameObject& go, int mouseX, int mouseY) {
 	// Obtener la posición de la cámara (origen del rayo)
-	glm::vec3 rayOrigin = camera.transform().pos();
+	glm::vec3 rayOrigin = mainCamera.GetComponent<CameraComponent>()->camera().transform().pos();
 
 	// Convertir las coordenadas del mouse a un rayo en el espacio del mundo
 	glm::vec3 rayDir = screenToWorldRay(mouseX, mouseY, WINDOW_SIZE.x, WINDOW_SIZE.y, viewMatrix, projectionMatrix);
@@ -561,8 +561,13 @@ int main(int argc, char* argv[]) {
 	MyGUI gui(window.windowPtr(), window.contextPtr());
 	init_opengl();
 
-	camera.transform().pos() = vec3(0, 1, 4);
-	camera.transform().rotate(glm::radians(180.0), vec3(0, 1, 0));
+	
+	mainCamera.name = "Main Camera";
+	mainCamera.AddComponent<CameraComponent>();
+
+	mainCamera.GetComponent<CameraComponent>()->camera().transform().pos() = vec3(0, 1, 4);
+	mainCamera.GetComponent<CameraComponent>()->camera().transform().rotate(glm::radians(180.0), vec3(0, 1, 0));
+	scene.emplaceChild(mainCamera);
 
 	SDL_Event event;
 	char* dropped_filePath;
