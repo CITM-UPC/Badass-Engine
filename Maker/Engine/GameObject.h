@@ -7,6 +7,8 @@
 #include "TreeExt.h"
 #include "Transform.h"
 #include "TransformComponent.h"
+#include "Camera.h"
+#include "CameraComponent.h"
 #include "Texture.h"
 #include "BoundingBox.h"
 #include "Component.h"
