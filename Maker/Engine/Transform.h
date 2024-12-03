@@ -6,6 +6,8 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 class Transform {
 
@@ -70,8 +72,11 @@ public:
 		// Convert degrees to radians
 		vec3 eulerAnglesRad = glm::radians(eulerAngles);
 
-		// Calculate the rotation matrix from the Euler angles
-		mat4 rotationMatrix = glm::eulerAngleXYZ(eulerAnglesRad.x, eulerAnglesRad.y, eulerAnglesRad.z);
+		// Convert Euler angles to quaternion
+		glm::quat quaternion = glm::quat(eulerAnglesRad);
+
+		// Convert quaternion to rotation matrix
+		mat4 rotationMatrix = glm::toMat4(quaternion);
 
 		// Calculate the new _left, _up, and _fwd vectors
 		_left = vec3(rotationMatrix[0]);

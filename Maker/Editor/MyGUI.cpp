@@ -172,7 +172,7 @@ void MyGUI::renderInspectorWindow()
             float rotationArray[3] = { rotation.x, rotation.y, rotation.z };
 
             if (ImGui::InputFloat3("##rotation", rotationArray)) {
-                //selectedGameObject->_transform.SetRotation(glm::vec3(rotationArray[0], rotationArray[1], rotationArray[2]));
+                selectedGameObject->GetComponent<TransformComponent>()->transform().SetRotation(glm::vec3(rotationArray[0], rotationArray[1], rotationArray[2]));
             }
 
             //Display scale
