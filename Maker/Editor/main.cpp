@@ -58,7 +58,7 @@ static const ivec2 WINDOW_SIZE(1280, 720);
 static const unsigned int FPS = 60;
 static const auto FRAME_DT = 1.0s / FPS;
 
-static GameObject mainCamera;
+GameObject mainCamera("Main Camera");
 glm::dmat4 projectionMatrix;
 glm::dmat4 viewMatrix;
 
@@ -224,7 +224,11 @@ void configureCamera() {
 
 void drawGameObjectAndChildren(GameObject& gameObject) {
 	// Draw the current game object
-	gameObject.draw();
+	
+	if (gameObject.HasComponent<MeshLoader>()) {
+		gameObject.draw();
+	}
+	
 
 	// Recursively draw all children
 	for (auto& child : gameObject.children()) {
@@ -562,8 +566,7 @@ int main(int argc, char* argv[]) {
 	init_opengl();
 
 	
-	mainCamera.name = "Main Camera";
-	mainCamera.AddComponent<CameraComponent>();
+	
 
 	mainCamera.GetComponent<CameraComponent>()->camera().transform().pos() = vec3(0, 1, 4);
 	mainCamera.GetComponent<CameraComponent>()->camera().transform().rotate(glm::radians(180.0), vec3(0, 1, 0));

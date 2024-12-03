@@ -98,6 +98,7 @@ private:
 
 template <typename T, typename... Args>
 std::shared_ptr<T> GameObject::AddComponent(Args&&... args) {
+	static_assert(std::is_base_of<Component, T>::value, "T must be derived from Component");
 	std::shared_ptr<T> newComponent = std::make_shared<T>(weak_from_this(), std::forward<Args>(args)...);
 	components[typeid(T)] = newComponent;
 	return newComponent;

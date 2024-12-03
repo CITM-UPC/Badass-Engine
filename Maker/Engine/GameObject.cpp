@@ -9,6 +9,10 @@ using namespace std;
 GameObject::GameObject(const std::string& name) : name(name), cachedComponentType(typeid(Component))
 {
 	AddComponent<TransformComponent>();
+	if (name == "Main Camera")
+	{
+		AddComponent<CameraComponent>();
+	}
 }
 
 GameObject::~GameObject()
@@ -20,6 +24,7 @@ void GameObject::draw() const {
 
 	glPushMatrix();
 	glMultMatrixd(GetComponent<TransformComponent>()->transform().data());
+
 
 	if (auto meshRenderer = GetComponent<MeshLoader>())
 	{

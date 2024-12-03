@@ -188,48 +188,51 @@ void MyGUI::renderInspectorWindow()
 
             ImGui::Separator();
             //Display Texture Info
-            
-            if (selectedGameObject->GetComponent<MeshLoader>()->GetImage() != nullptr)
+            if (selectedGameObject->HasComponent<MeshLoader>())
             {
-                ImGui::Text("Texture Info");
-                ImGui::Text("Texture Path: %s", selectedGameObject->texturePath.c_str());
-                ImGui::Text("Texture size: %d x %d", selectedGameObject->GetComponent<MeshLoader>()->GetImage()->width(), selectedGameObject->GetComponent<MeshLoader>()->GetImage()->height());
-            }
-			else
-			{
-				ImGui::Text("No Texture loaded.");
-			}
+                if (selectedGameObject->GetComponent<MeshLoader>()->GetImage() != nullptr)
+                {
+                    ImGui::Text("Texture Info");
+                    ImGui::Text("Texture Path: %s", selectedGameObject->texturePath.c_str());
+                    ImGui::Text("Texture size: %d x %d", selectedGameObject->GetComponent<MeshLoader>()->GetImage()->width(), selectedGameObject->GetComponent<MeshLoader>()->GetImage()->height());
+                }
+                else
+                {
+                    ImGui::Text("No Texture loaded.");
+                }
 
-            // Add Texture button
-            if (ImGui::Button("Texture")) {
-                const char* filterPatterns[1] = { "*.png" };
-                const char* filePath = tinyfd_openFileDialog(
-                    "Select a texture file",
-                    "Assets",
-                    1,
-                    filterPatterns,
-                    NULL,
-                    0
-                );
-                if (filePath) {
-					Log::getInstance().logMessage("Didac mete tu la funcion que yo no se como se hace");
+                // Add Texture button
+                if (ImGui::Button("Texture")) {
+                    const char* filterPatterns[1] = { "*.png" };
+                    const char* filePath = tinyfd_openFileDialog(
+                        "Select a texture file",
+                        "Assets",
+                        1,
+                        filterPatterns,
+                        NULL,
+                        0
+                    );
+                    if (filePath) {
+                        Log::getInstance().logMessage("Didac mete tu la funcion que yo no se como se hace");
+                    }
+                }
+
+                if (ImGui::Checkbox("Draw Texture", &selectedGameObject->GetComponent<MeshLoader>()->drawTexture)) {
+                    if (selectedGameObject->GetComponent<MeshLoader>()->drawTexture)
+                    {
+                        selectedGameObject->GetComponent<MeshLoader>()->GetMesh()->deleteCheckerTexture();
+                    }
+                }
+
+                ImGui::Separator();
+                //Display Mesh Info         
+                ImGui::Text("Mesh Info");
+                ImGui::Text("Mesh Path: %s", selectedGameObject->meshPath.c_str());
+                if (ImGui::Checkbox("Draw Normals", &selectedGameObject->GetComponent<MeshLoader>()->drawNormals)) {
+
                 }
             }
             
-            if (ImGui::Checkbox("Draw Texture", &selectedGameObject->GetComponent<MeshLoader>()->drawTexture)) {
-                if (selectedGameObject->GetComponent<MeshLoader>()->drawTexture)
-                {
-                    selectedGameObject->GetComponent<MeshLoader>()->GetMesh()->deleteCheckerTexture();
-                }
-            }
-
-            ImGui::Separator();
-            //Display Mesh Info         
-            ImGui::Text("Mesh Info");
-            ImGui::Text("Mesh Path: %s", selectedGameObject->meshPath.c_str());
-            if (ImGui::Checkbox("Draw Normals", &selectedGameObject->GetComponent<MeshLoader>()->drawNormals)) {
-
-            }
         }
         else {
             ImGui::Text("No GameObject selected.");

@@ -3,7 +3,8 @@
 #include <glm/gtc/quaternion.hpp>
 #include "Component.h"
 
-class TransformComponent : public Component {
+class TransformComponent : public Component 
+{
 	Transform _transform;
 public:
 	explicit TransformComponent(std::weak_ptr<GameObject> owner) : Component(owner) {}

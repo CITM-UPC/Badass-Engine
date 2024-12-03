@@ -4,7 +4,7 @@
 #include "Component.h"
 #include "Camera.h"
 
-class CameraComponent : Component
+class CameraComponent : public Component
 {
 	Camera _camera;
 public:
