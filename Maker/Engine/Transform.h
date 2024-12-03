@@ -83,4 +83,20 @@ public:
 		_up = vec3(rotationMatrix[1]);
 		_fwd = vec3(rotationMatrix[2]);
 	}
+	void SetScale(const vec3& scale) {
+		// Normalize the _left, _up, and _fwd vectors
+		vec3 leftNormalized = glm::normalize(_left);
+		vec3 upNormalized = glm::normalize(_up);
+		vec3 fwdNormalized = glm::normalize(_fwd);
+
+		// Scale the vectors by the provided scale
+		_left = leftNormalized * scale.x;
+		_up = upNormalized * scale.y;
+		_fwd = fwdNormalized * scale.z;
+
+		// Update the transformation matrix
+		_mat[0] = vec4(_left, 0.0);
+		_mat[1] = vec4(_up, 0.0);
+		_mat[2] = vec4(_fwd, 0.0);
+	}
 };
