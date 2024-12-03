@@ -16,7 +16,6 @@ class GameObject : public std::enable_shared_from_this<GameObject>, public TreeE
 {
 
 public:
-	Transform _transform;
 	std::shared_ptr<Mesh> _mesh_ptr;
 	glm::u8vec3 _color = glm::u8vec3(255, 255, 255);
 	Texture _texture;
@@ -48,8 +47,6 @@ public:
 	void SetName(const std::string& name);
 
 	bool CompareTag(const std::string& tag) const;
-
-	auto& GetTransform() const { return _transform; }
 
 	bool operator==(const GameObject& other) const {
 		return this->id == other.id;

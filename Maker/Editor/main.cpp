@@ -371,8 +371,8 @@ static void handleKeyboardInput() {
 
 	if (state[SDL_SCANCODE_F] && selectedGameObject != nullptr) {
 		isFpressed != isFpressed;
-		camera.transform().pos() = selectedGameObject->GetTransform().pos() + vec3(0, 1, 4);
-		camera.transform().lookAt(selectedGameObject->GetTransform().pos());
+		camera.transform().pos() = selectedGameObject->GetComponent<TransformComponent>()->transform().pos() + vec3(0, 1, 4);
+		camera.transform().lookAt(selectedGameObject->GetComponent<TransformComponent>()->transform().pos());
 	}
 	if (state[SDL_SCANCODE_LALT]) {
 		altKeyPressed = true;
@@ -473,7 +473,7 @@ static void mouseMotion_func(int x, int y) {
 		float orbitRadius = 10.0f;
 
 		// Calcular la nueva posición de la cámara en la órbita alrededor del objeto seleccionado
-		glm::vec3 orbitPosition = glm::vec3(selectedGameObject->GetTransform().pos()) + glm::vec3(
+		glm::vec3 orbitPosition = glm::vec3(selectedGameObject->GetComponent<TransformComponent>()->transform().pos()) + glm::vec3(
 			orbitRadius * cos(radiansPitch) * sin(radiansYaw),
 			orbitRadius * sin(radiansPitch),
 			orbitRadius * cos(radiansPitch) * cos(radiansYaw)
@@ -481,7 +481,7 @@ static void mouseMotion_func(int x, int y) {
 
 		// Actualizar la posición de la cámara y orientar hacia el objeto seleccionado
 		camera.transform().SetPosition(orbitPosition);
-		camera.transform().lookAt(selectedGameObject->GetTransform().pos());
+		camera.transform().lookAt(selectedGameObject->GetComponent<TransformComponent>()->transform().pos());
 	}
 	
 	if (rightMousePressed) {
@@ -586,7 +586,7 @@ int main(int argc, char* argv[]) {
 	go.GetComponent<MeshLoader>()->SetImage(imageTexture);
 	go.GetComponent<MeshLoader>()->SetTexture(texture);
 	go.SetName("BakerHouse");
-	go._transform.SetPosition(vec3(2, 0, 0));
+	go.GetComponent<TransformComponent>()->transform().SetPosition(vec3(2, 0, 0));
 	scene.emplaceChild(go);
 
 	SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
