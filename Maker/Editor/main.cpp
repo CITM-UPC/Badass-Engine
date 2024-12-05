@@ -262,7 +262,7 @@ void configureCamera() {
 	glLoadMatrixd(glm::value_ptr(viewMatrix));
 }
 
-void drawGameObjectAndChildren(GameObject& gameObject) {
+void updateGameObjectAndChildren(GameObject& gameObject) {
 	// Draw the current game object
 	
 	if (gameObject.HasComponent<MeshLoader>()) {
@@ -270,19 +270,20 @@ void drawGameObjectAndChildren(GameObject& gameObject) {
 	}
 	
 	if (gameObject.HasComponent<CameraComponent>()) {
+		gameObject.GetComponent<CameraComponent>()->camera().UpdateCamera();
 		DrawFrustum(gameObject.GetComponent<CameraComponent>()->camera().frustum);
 	}
 
 	// Recursively draw all children
 	for (auto& child : gameObject.children()) {
-		drawGameObjectAndChildren(child);
+		updateGameObjectAndChildren(child);
 	}
 }
 
-void drawScene() {
+void updateScene() {
 	// Draw all top-level children of the scene
 	for (auto& child : scene.children()) {
-		drawGameObjectAndChildren(child);
+		updateGameObjectAndChildren(child);
 	}
 }
 
@@ -291,7 +292,7 @@ static void display_func() {
 	configureCamera();
 	drawFloorGrid(16, 0.25);
 
-	drawScene();
+	updateScene();
 
 	scene.drawDebug(scene);
 

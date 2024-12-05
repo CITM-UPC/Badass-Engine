@@ -91,6 +91,8 @@ public:
 	void drawAxis(double size);
 	void drawDebug(const GameObject& obj);
 
+	void UpdateCamera() const;
+
 private:
 	
 	

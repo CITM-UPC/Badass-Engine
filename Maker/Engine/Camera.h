@@ -100,6 +100,7 @@ public:
 
 	const auto& transform() const { return _transform; }
 	auto& transform() { return _transform; }
+    void UpdateCamera();
 
     Frustum frustum;
 	mat4 projection() const;

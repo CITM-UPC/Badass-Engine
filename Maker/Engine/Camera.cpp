@@ -19,3 +19,9 @@ void Camera::setProjection(double fov, double aspect, double zNear, double zFar)
 	this->zNear = zNear;
 	this->zFar = zFar;
 }
+
+void Camera::UpdateCamera()
+{
+
+	frustum.Update(viewProjection());
+}

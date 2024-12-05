@@ -20,7 +20,8 @@ GameObject::~GameObject()
 	
 }
 
-void GameObject::draw() const {
+void GameObject::draw() const 
+{
 
 	glPushMatrix();
 	glMultMatrixd(GetComponent<TransformComponent>()->transform().data());
@@ -37,6 +38,19 @@ void GameObject::draw() const {
 	}
 
 	glPopMatrix();
+}
+
+void GameObject::UpdateCamera() const
+{
+	if (auto camera = GetComponent<CameraComponent>())
+	{
+		camera->camera().UpdateCamera();
+	}
+
+	for (const auto& child : children())
+	{
+		child.UpdateCamera();
+	}
 }
 
 std::string GameObject::GetName() const
