@@ -217,10 +217,7 @@ void GameObject::ReparentGameObject(GameObject& newParent)
     if (!scene.getChildren().empty()) {
         this->setParent(newParent);
     }
-    else {
-        // If there are no children, add the new GameObject to the scene
-        scene.emplaceChild(this);
-    }
+    
 }
 
 void GameObject::RemoveAsChild()
