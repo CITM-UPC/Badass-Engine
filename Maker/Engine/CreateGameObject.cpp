@@ -193,3 +193,50 @@ GameObject GameObject::createCylinder()
 
     return gameObject;
 }
+
+GameObject GameObject::CreateEmpty()
+{
+    GameObject emptyGo;
+    emptyGo.SetName("GameObject");
+
+    return emptyGo;
+}
+
+GameObject GameObject::CreateEmptyChild(GameObject& parent)
+{
+    GameObject emptyGo;
+    emptyGo.SetName("GameObject");
+
+    emptyGo.setParent(parent);
+
+    return emptyGo;
+}
+
+void GameObject::ReparentGameObject(GameObject& newParent)
+{
+    if (!scene.getChildren().empty()) {
+        this->setParent(newParent);
+    }
+    else {
+        // If there are no children, add the new GameObject to the scene
+        scene.emplaceChild(this);
+    }
+}
+
+void GameObject::RemoveAsChild()
+{
+    this->setParent(scene);
+}
+
+void GameObject::DeleteGameObject()
+{
+   // Delete GameObject
+    if (!this) {
+        return;
+    }
+
+    this->destroyed = true;
+
+    // We have to implement the destruction of the Components
+
+}

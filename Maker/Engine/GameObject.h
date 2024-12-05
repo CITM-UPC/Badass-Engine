@@ -13,6 +13,7 @@
 #include "BoundingBox.h"
 #include "Component.h"
 #include "Mesh.h"
+#include "Scene.h"
 
 class GameObject : public std::enable_shared_from_this<GameObject>, public TreeExt<GameObject>
 {
@@ -78,6 +79,13 @@ public:
 	static GameObject createCube();
 	static GameObject createSphere();
 	static GameObject createCylinder();
+
+	// Functions for the Hierarchy
+	static GameObject CreateEmpty();
+	static GameObject CreateEmptyChild(GameObject& parent);
+	void ReparentGameObject(GameObject& newParent);
+	void RemoveAsChild();
+	void DeleteGameObject();
 
 	void draw() const;
 	void drawAxis(double size);
