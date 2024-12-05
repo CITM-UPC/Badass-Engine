@@ -27,6 +27,12 @@ public:
     void renderConsoleWindow();
     void renderGameObjectNode(GameObject* gameObject);
 
+    void ManagePosition();
+
+    void ManageRotation();
+
+    void ManageScale();
+
     string memoryUsage;
 private:
 
