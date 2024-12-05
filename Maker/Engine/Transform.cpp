@@ -8,7 +8,7 @@
 
 
 
-const auto& Transform::GetRotation() const
+const vec3& Transform::GetRotation() const
 {
     // Calculate the rotation matrix from the _left, _up, and _fwd vectors
     mat4 rotationMatrix = mat4(1.0);
@@ -25,7 +25,7 @@ const auto& Transform::GetRotation() const
     return eulerAngles;
 }
 
-const auto& Transform::GetScale() const
+const vec3& Transform::GetScale() const
 {
     glm::vec3 left(_mat[0][0], _mat[0][1], _mat[0][2]);
     glm::vec3 up(_mat[1][0], _mat[1][1], _mat[1][2]);

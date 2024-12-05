@@ -29,9 +29,9 @@ public:
 	const auto& up() const { return _up; }
 	const auto& fwd() const { return _fwd; }
 	const auto& pos() const { return _pos; }
-	const auto& GetRotation() const;
+	const vec3& GetRotation() const;
 
-	const auto& GetScale() const;
+	const vec3& GetScale() const;
 
 	auto& pos() { return _pos; }
 
