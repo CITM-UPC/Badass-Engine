@@ -61,6 +61,7 @@ static const auto FRAME_DT = 1.0s / FPS;
 GameObject mainCamera("Main Camera");
 glm::dmat4 projectionMatrix;
 glm::dmat4 viewMatrix;
+glm::dmat4 viewProjectionMatrix;
 
 vec3 pointSelected(0.0f, 0.0f, 0.0f);
 float angleX = 0.0f;
@@ -211,9 +212,48 @@ static void drawFloorGrid(int size, double step) {
 	glEnd();
 }
 
+void DrawFrustum(const Frustum& frustum)
+{
+	glColor3f(1, 1, 1);
+	glLineWidth(0.5);
+
+	// Draw near plane
+	glBegin(GL_LINE_LOOP);
+	glVertex3f(frustum.vertices[0].x, frustum.vertices[0].y, frustum.vertices[0].z);
+	glVertex3f(frustum.vertices[1].x, frustum.vertices[1].y, frustum.vertices[1].z);
+	glVertex3f(frustum.vertices[2].x, frustum.vertices[2].y, frustum.vertices[2].z);
+	glVertex3f(frustum.vertices[3].x, frustum.vertices[3].y, frustum.vertices[3].z);
+	glEnd();
+
+	// Draw far plane
+	glBegin(GL_LINE_LOOP);
+	glVertex3f(frustum.vertices[4].x, frustum.vertices[4].y, frustum.vertices[4].z);
+	glVertex3f(frustum.vertices[5].x, frustum.vertices[5].y, frustum.vertices[5].z);
+	glVertex3f(frustum.vertices[6].x, frustum.vertices[6].y, frustum.vertices[6].z);
+	glVertex3f(frustum.vertices[7].x, frustum.vertices[7].y, frustum.vertices[7].z);
+	glEnd();
+
+	// Draw lines connecting near and far planes
+	glBegin(GL_LINES);
+	glVertex3f(frustum.vertices[0].x, frustum.vertices[0].y, frustum.vertices[0].z);
+	glVertex3f(frustum.vertices[4].x, frustum.vertices[4].y, frustum.vertices[4].z);
+
+	glVertex3f(frustum.vertices[1].x, frustum.vertices[1].y, frustum.vertices[1].z);
+	glVertex3f(frustum.vertices[5].x, frustum.vertices[5].y, frustum.vertices[5].z);
+
+	glVertex3f(frustum.vertices[2].x, frustum.vertices[2].y, frustum.vertices[2].z);
+	glVertex3f(frustum.vertices[6].x, frustum.vertices[6].y, frustum.vertices[6].z);
+
+	glVertex3f(frustum.vertices[3].x, frustum.vertices[3].y, frustum.vertices[3].z);
+	glVertex3f(frustum.vertices[7].x, frustum.vertices[7].y, frustum.vertices[7].z);
+	glEnd();
+}
+
 void configureCamera() {
 	projectionMatrix = mainCamera.GetComponent<CameraComponent>()->camera().projection();
 	viewMatrix = mainCamera.GetComponent<CameraComponent>()->camera().view();
+	viewProjectionMatrix = mainCamera.GetComponent<CameraComponent>()->camera().viewProjection();
+	mainCamera.GetComponent<CameraComponent>()->camera().frustum.Update(viewProjectionMatrix);
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadMatrixd(glm::value_ptr(projectionMatrix));
@@ -229,6 +269,9 @@ void drawGameObjectAndChildren(GameObject& gameObject) {
 		gameObject.draw();
 	}
 	
+	if (gameObject.HasComponent<CameraComponent>()) {
+		DrawFrustum(gameObject.GetComponent<CameraComponent>()->camera().frustum);
+	}
 
 	// Recursively draw all children
 	for (auto& child : gameObject.children()) {
@@ -565,7 +608,11 @@ int main(int argc, char* argv[]) {
 	MyGUI gui(window.windowPtr(), window.contextPtr());
 	init_opengl();
 
-	
+	GameObject testCamera;
+	testCamera.AddComponent<CameraComponent>()->camera().setProjection(45.0, 1.0, 0.1, 100.0);
+	testCamera.GetComponent<TransformComponent>()->transform().pos() = vec3(0, 1, 4);
+	testCamera.GetComponent<TransformComponent>()->transform().rotate(glm::radians(180.0), vec3(0, 1, 0));
+	scene.emplaceChild(testCamera);
 	
 
 	mainCamera.GetComponent<CameraComponent>()->camera().transform().pos() = vec3(0, 1, 4);
