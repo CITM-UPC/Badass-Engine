@@ -140,6 +140,11 @@ void MyGUI::renderGameObjectNode(GameObject* gameObject)
         nodeFlags |= ImGuiTreeNodeFlags_Selected;
     }
 
+    // Check if the GameObject has children
+    if (gameObject->getChildren().empty()) {
+        nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+    }
+
     // Create a tree node for the GameObject
     bool nodeOpen = ImGui::TreeNodeEx(gameObject->GetName().c_str(), nodeFlags);
     if (ImGui::IsItemClicked()) {
@@ -166,13 +171,13 @@ void MyGUI::renderGameObjectNode(GameObject* gameObject)
         if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
             renaming = true;
             renamingObject = gameObject;
-            strcpy_s(newName, gameObject->name.c_str());
+            strcpy_s(newName, gameObject->GetName().c_str());
         }
     }
 
-    // If the node is open, render its children
-    if (nodeOpen) {
-        for (auto& child : gameObject->children()) {
+    // Recursively render children if the node is open
+    if (nodeOpen && !gameObject->getChildren().empty()) {
+        for (auto& child : gameObject->getChildren()) {
             renderGameObjectNode(&child);
         }
         ImGui::TreePop();
@@ -180,6 +185,145 @@ void MyGUI::renderGameObjectNode(GameObject* gameObject)
 }
 
 
+void MyGUI::ManagePosition()
+{
+    // Display position
+    ImGui::Text("Position");
+    // Get and sanitize the position values
+    float position[3] = { sanitizeZero(static_cast<float>(selectedGameObject->GetComponent<TransformComponent>()->transform().pos().x)),
+                          sanitizeZero(static_cast<float>(selectedGameObject->GetComponent<TransformComponent>()->transform().pos().y)),
+                          sanitizeZero(static_cast<float>(selectedGameObject->GetComponent<TransformComponent>()->transform().pos().z)) };
+
+    // Format the position values as strings
+    char posStr[3][32];
+    snprintf(posStr[0], sizeof(posStr[0]), "%s", formatFloat(position[0]).c_str());
+    snprintf(posStr[1], sizeof(posStr[1]), "%s", formatFloat(position[1]).c_str());
+    snprintf(posStr[2], sizeof(posStr[2]), "%s", formatFloat(position[2]).c_str());
+
+    bool positionChanged = false;
+
+    // Display and edit the X position
+    ImGui::Text("X:"); ImGui::SameLine();
+    ImGui::SetNextItemWidth(100);
+    if (ImGui::InputText("##positionX", posStr[0], sizeof(posStr[0]), ImGuiInputTextFlags_EnterReturnsTrue)) {
+        position[0] = std::stof(posStr[0]);
+        positionChanged = true;
+    }
+    // Display and edit the Y position
+    ImGui::SameLine();
+    ImGui::Text("Y:"); ImGui::SameLine();
+    ImGui::SetNextItemWidth(100);
+    if (ImGui::InputText("##positionY", posStr[1], sizeof(posStr[1]), ImGuiInputTextFlags_EnterReturnsTrue)) {
+        position[1] = std::stof(posStr[1]);
+        positionChanged = true;
+    }
+    // Display and edit the Z position
+    ImGui::SameLine();
+    ImGui::Text("Z:"); ImGui::SameLine();
+    ImGui::SetNextItemWidth(100);
+    if (ImGui::InputText("##positionZ", posStr[2], sizeof(posStr[2]), ImGuiInputTextFlags_EnterReturnsTrue)) {
+        position[2] = std::stof(posStr[2]);
+        positionChanged = true;
+    }
+
+    // Set the new position for the GameObject only if a change was made
+    if (positionChanged) {
+        selectedGameObject->GetComponent<TransformComponent>()->transform().SetPosition(glm::dvec3(position[0], position[1], position[2]));
+    }
+}
+
+void MyGUI::ManageRotation()
+{
+    // Display rotation
+    ImGui::Text("Rotation");
+    // Get and sanitize the rotation values
+    glm::vec3 rotation = selectedGameObject->GetComponent<TransformComponent>()->transform().GetRotation();
+    float rotationArray[3] = { sanitizeZero(rotation.x), sanitizeZero(rotation.y), sanitizeZero(rotation.z) };
+
+    // Format the rotation values as strings
+    char rotStr[3][32];
+    snprintf(rotStr[0], sizeof(rotStr[0]), "%s", formatFloat(rotationArray[0]).c_str());
+    snprintf(rotStr[1], sizeof(rotStr[1]), "%s", formatFloat(rotationArray[1]).c_str());
+    snprintf(rotStr[2], sizeof(rotStr[2]), "%s", formatFloat(rotationArray[2]).c_str());
+
+    bool rotationChanged = false;
+
+    // Display and edit the X rotation
+    ImGui::Text("X:"); ImGui::SameLine();
+    ImGui::SetNextItemWidth(100);
+    if (ImGui::InputText("##rotationX", rotStr[0], sizeof(rotStr[0]), ImGuiInputTextFlags_EnterReturnsTrue)) {
+        rotationArray[0] = std::stof(rotStr[0]);
+        rotationChanged = true;
+    }
+    // Display and edit the Y rotation
+    ImGui::SameLine();
+    ImGui::Text("Y:"); ImGui::SameLine();
+    ImGui::SetNextItemWidth(100);
+    if (ImGui::InputText("##rotationY", rotStr[1], sizeof(rotStr[1]), ImGuiInputTextFlags_EnterReturnsTrue)) {
+        rotationArray[1] = std::stof(rotStr[1]);
+        rotationChanged = true;
+    }
+    // Display and edit the Z rotation
+    ImGui::SameLine();
+    ImGui::Text("Z:"); ImGui::SameLine();
+    ImGui::SetNextItemWidth(100);
+    if (ImGui::InputText("##rotationZ", rotStr[2], sizeof(rotStr[2]), ImGuiInputTextFlags_EnterReturnsTrue)) {
+        rotationArray[2] = std::stof(rotStr[2]);
+        rotationChanged = true;
+    }
+
+    // Set the new rotation for the GameObject only if a change was made
+    if (rotationChanged) {
+        selectedGameObject->GetComponent<TransformComponent>()->transform().SetRotation(glm::vec3(rotationArray[0], rotationArray[1], rotationArray[2]));
+    }
+}
+
+
+void MyGUI::ManageScale()
+{
+    // Display scale
+    ImGui::Text("Scale");
+    // Get and sanitize the scale values
+    glm::vec3 scale = selectedGameObject->GetComponent<TransformComponent>()->transform().GetScale();
+    float scaleArray[3] = { sanitizeZero(scale.x), sanitizeZero(scale.y), sanitizeZero(scale.z) };
+
+    // Format the scale values as strings
+    char scaleStr[3][32];
+    snprintf(scaleStr[0], sizeof(scaleStr[0]), "%s", formatFloat(scaleArray[0]).c_str());
+    snprintf(scaleStr[1], sizeof(scaleStr[1]), "%s", formatFloat(scaleArray[1]).c_str());
+    snprintf(scaleStr[2], sizeof(scaleStr[2]), "%s", formatFloat(scaleArray[2]).c_str());
+
+    bool scaleChanged = false;
+
+    // Display and edit the X scale
+    ImGui::Text("X:"); ImGui::SameLine();
+    ImGui::SetNextItemWidth(100);
+    if (ImGui::InputText("##scaleX", scaleStr[0], sizeof(scaleStr[0]), ImGuiInputTextFlags_EnterReturnsTrue)) {
+        scaleArray[0] = std::stof(scaleStr[0]);
+        scaleChanged = true;
+    }
+    // Display and edit the Y scale
+    ImGui::SameLine();
+    ImGui::Text("Y:"); ImGui::SameLine();
+    ImGui::SetNextItemWidth(100);
+    if (ImGui::InputText("##scaleY", scaleStr[1], sizeof(scaleStr[1]), ImGuiInputTextFlags_EnterReturnsTrue)) {
+        scaleArray[1] = std::stof(scaleStr[1]);
+        scaleChanged = true;
+    }
+    // Display and edit the Z scale
+    ImGui::SameLine();
+    ImGui::Text("Z:"); ImGui::SameLine();
+    ImGui::SetNextItemWidth(100);
+    if (ImGui::InputText("##scaleZ", scaleStr[2], sizeof(scaleStr[2]), ImGuiInputTextFlags_EnterReturnsTrue)) {
+        scaleArray[2] = std::stof(scaleStr[2]);
+        scaleChanged = true;
+    }
+
+    // Set the new scale for the GameObject only if a change was made
+    if (scaleChanged) {
+        selectedGameObject->GetComponent<TransformComponent>()->transform().SetScale(glm::vec3(scaleArray[0], scaleArray[1], scaleArray[2]));
+    }
+}
 
 void MyGUI::renderInspectorWindow()
 {
@@ -195,118 +339,13 @@ void MyGUI::renderInspectorWindow()
             ImGui::Text("Selected GameObject: %s", selectedGameObject->GetName().c_str());
             ImGui::Separator();
 
-            // Display position
-            ImGui::Text("Position");
-            // Get and sanitize the position values
-            float position[3] = { sanitizeZero(static_cast<float>(selectedGameObject->GetComponent<TransformComponent>()->transform().pos().x)),
-                                  sanitizeZero(static_cast<float>(selectedGameObject->GetComponent<TransformComponent>()->transform().pos().y)),
-                                  sanitizeZero(static_cast<float>(selectedGameObject->GetComponent<TransformComponent>()->transform().pos().z)) };
+			ManagePosition();
+			ManageRotation();
+			ManageScale();
 
-            // Format the position values as strings
-            char posStr[3][32];
-            snprintf(posStr[0], sizeof(posStr[0]), "%s", formatFloat(position[0]).c_str());
-            snprintf(posStr[1], sizeof(posStr[1]), "%s", formatFloat(position[1]).c_str());
-            snprintf(posStr[2], sizeof(posStr[2]), "%s", formatFloat(position[2]).c_str());
+            
 
-            // Display and edit the X position
-            ImGui::Text("X:"); ImGui::SameLine();
-            ImGui::SetNextItemWidth(100);
-            if (ImGui::InputText("##positionX", posStr[0], sizeof(posStr[0]), ImGuiInputTextFlags_EnterReturnsTrue)) {
-                position[0] = std::stof(posStr[0]);
-            }
-            // Display and edit the Y position
-            ImGui::SameLine();
-            ImGui::Text("Y:"); ImGui::SameLine();
-            ImGui::SetNextItemWidth(100);
-            if (ImGui::InputText("##positionY", posStr[1], sizeof(posStr[1]), ImGuiInputTextFlags_EnterReturnsTrue)) {
-                position[1] = std::stof(posStr[1]);
-            }
-            // Display and edit the Z position
-            ImGui::SameLine();
-            ImGui::Text("Z:"); ImGui::SameLine();
-            ImGui::SetNextItemWidth(100);
-            if (ImGui::InputText("##positionZ", posStr[2], sizeof(posStr[2]), ImGuiInputTextFlags_EnterReturnsTrue)) {
-                position[2] = std::stof(posStr[2]);
-            }
-            // Set the new position for the GameObject
-            selectedGameObject->GetComponent<TransformComponent>()->transform().SetPosition(glm::dvec3(position[0], position[1], position[2]));
-
-            // Display rotation
-            ImGui::Text("Rotation");
-            // Get and sanitize the rotation values
-            glm::vec3 rotation = selectedGameObject->GetComponent<TransformComponent>()->transform().GetRotation();
-            float rotationArray[3] = { sanitizeZero(rotation.x), sanitizeZero(rotation.y), sanitizeZero(rotation.z) };
-
-            // Format the rotation values as strings
-            char rotStr[3][32];
-            snprintf(rotStr[0], sizeof(rotStr[0]), "%s", formatFloat(rotationArray[0]).c_str());
-            snprintf(rotStr[1], sizeof(rotStr[1]), "%s", formatFloat(rotationArray[1]).c_str());
-            snprintf(rotStr[2], sizeof(rotStr[2]), "%s", formatFloat(rotationArray[2]).c_str());
-
-            // Display and edit the X rotation
-            ImGui::Text("X:"); ImGui::SameLine();
-            ImGui::SetNextItemWidth(100);
-            bool rotationChanged = false;
-            if (ImGui::InputText("##rotationX", rotStr[0], sizeof(rotStr[0]), ImGuiInputTextFlags_EnterReturnsTrue)) {
-                rotationArray[0] = std::stof(rotStr[0]);
-                rotationChanged = true;
-            }
-            // Display and edit the Y rotation
-            ImGui::SameLine();
-            ImGui::Text("Y:"); ImGui::SameLine();
-            ImGui::SetNextItemWidth(100);
-            if (ImGui::InputText("##rotationY", rotStr[1], sizeof(rotStr[1]), ImGuiInputTextFlags_EnterReturnsTrue)) {
-                rotationArray[1] = std::stof(rotStr[1]);
-                rotationChanged = true;
-            }
-            // Display and edit the Z rotation
-            ImGui::SameLine();
-            ImGui::Text("Z:"); ImGui::SameLine();
-            ImGui::SetNextItemWidth(100);
-            if (ImGui::InputText("##rotationZ", rotStr[2], sizeof(rotStr[2]), ImGuiInputTextFlags_EnterReturnsTrue)) {
-                rotationArray[2] = std::stof(rotStr[2]);
-                rotationChanged = true;
-            }
-            // Set the new rotation for the GameObject only if it has changed
-            if (rotationChanged) {
-                selectedGameObject->GetComponent<TransformComponent>()->transform().SetRotation(glm::vec3(rotationArray[0], rotationArray[1], rotationArray[2]));
-            }
-
-            // Display scale
-            ImGui::Text("Scale");
-            // Get and sanitize the scale values
-            glm::vec3 scale = selectedGameObject->GetComponent<TransformComponent>()->transform().GetScale();
-            float scaleArray[3] = { sanitizeZero(scale.x), sanitizeZero(scale.y), sanitizeZero(scale.z) };
-
-            // Format the scale values as strings
-            char scaleStr[3][32];
-            snprintf(scaleStr[0], sizeof(scaleStr[0]), "%s", formatFloat(scaleArray[0]).c_str());
-            snprintf(scaleStr[1], sizeof(scaleStr[1]), "%s", formatFloat(scaleArray[1]).c_str());
-            snprintf(scaleStr[2], sizeof(scaleStr[2]), "%s", formatFloat(scaleArray[2]).c_str());
-
-            // Display and edit the X scale
-            ImGui::Text("X:"); ImGui::SameLine();
-            ImGui::SetNextItemWidth(100);
-            if (ImGui::InputText("##scaleX", scaleStr[0], sizeof(scaleStr[0]), ImGuiInputTextFlags_EnterReturnsTrue)) {
-                scaleArray[0] = std::stof(scaleStr[0]);
-            }
-            // Display and edit the Y scale
-            ImGui::SameLine();
-            ImGui::Text("Y:"); ImGui::SameLine();
-            ImGui::SetNextItemWidth(100);
-            if (ImGui::InputText("##scaleY", scaleStr[1], sizeof(scaleStr[1]), ImGuiInputTextFlags_EnterReturnsTrue)) {
-                scaleArray[1] = std::stof(scaleStr[1]);
-            }
-            // Display and edit the Z scale
-            ImGui::SameLine();
-            ImGui::Text("Z:"); ImGui::SameLine();
-            ImGui::SetNextItemWidth(100);
-            if (ImGui::InputText("##scaleZ", scaleStr[2], sizeof(scaleStr[2]), ImGuiInputTextFlags_EnterReturnsTrue)) {
-                scaleArray[2] = std::stof(scaleStr[2]);
-            }
-            // Set the new scale for the GameObject
-            selectedGameObject->GetComponent<TransformComponent>()->transform().SetScale(glm::vec3(scaleArray[0], scaleArray[1], scaleArray[2]));
-
+            
             ImGui::Separator();
 
             // Display Texture Info if the GameObject has a MeshLoader component
