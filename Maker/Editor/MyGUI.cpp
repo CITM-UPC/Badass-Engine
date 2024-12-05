@@ -140,6 +140,11 @@ void MyGUI::renderGameObjectNode(GameObject* gameObject)
         nodeFlags |= ImGuiTreeNodeFlags_Selected;
     }
 
+    // Check if the GameObject has children
+    if (gameObject->getChildren().empty()) {
+        nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+    }
+
     // Create a tree node for the GameObject
     bool nodeOpen = ImGui::TreeNodeEx(gameObject->GetName().c_str(), nodeFlags);
     if (ImGui::IsItemClicked()) {
@@ -166,18 +171,19 @@ void MyGUI::renderGameObjectNode(GameObject* gameObject)
         if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
             renaming = true;
             renamingObject = gameObject;
-            strcpy_s(newName, gameObject->name.c_str());
+            strcpy_s(newName, gameObject->GetName().c_str());
         }
     }
 
-    // If the node is open, render its children
-    if (nodeOpen) {
-        for (auto& child : gameObject->children()) {
+    // Recursively render children if the node is open
+    if (nodeOpen && !gameObject->getChildren().empty()) {
+        for (auto& child : gameObject->getChildren()) {
             renderGameObjectNode(&child);
         }
         ImGui::TreePop();
     }
 }
+
 
 void MyGUI::ManagePosition()
 {
