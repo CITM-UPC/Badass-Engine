@@ -253,7 +253,7 @@ void configureCamera() {
 	projectionMatrix = mainCamera.GetComponent<CameraComponent>()->camera().projection();
 	viewMatrix = mainCamera.GetComponent<CameraComponent>()->camera().view();
 	viewProjectionMatrix = mainCamera.GetComponent<CameraComponent>()->camera().viewProjection();
-	mainCamera.GetComponent<CameraComponent>()->camera().frustum.Update(viewProjectionMatrix);
+	mainCamera.GetComponent<CameraComponent>()->camera().UpdateMainCamera();
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadMatrixd(glm::value_ptr(projectionMatrix));
@@ -269,8 +269,8 @@ void updateGameObjectAndChildren(GameObject& gameObject) {
 		gameObject.draw();
 	}
 	
-	if (gameObject.HasComponent<CameraComponent>()) {
-		gameObject.GetComponent<CameraComponent>()->camera().UpdateCamera();
+	if (gameObject.HasComponent<CameraComponent>() && gameObject.name != "Main Camera") {
+		gameObject.GetComponent<CameraComponent>()->camera().UpdateCamera(gameObject.GetComponent<TransformComponent>()->transform());
 		DrawFrustum(gameObject.GetComponent<CameraComponent>()->camera().frustum);
 	}
 

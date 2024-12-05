@@ -44,7 +44,8 @@ void GameObject::UpdateCamera() const
 {
 	if (auto camera = GetComponent<CameraComponent>())
 	{
-		camera->camera().UpdateCamera();
+		
+		camera->camera().UpdateCamera(GetComponent<TransformComponent>()->transform());
 	}
 
 	for (const auto& child : children())

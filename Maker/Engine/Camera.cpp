@@ -2,15 +2,15 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 glm::dmat4 Camera::projection() const {
-	return glm::perspective(fov, aspect, zNear, zFar);
+	return projectionMatrix;
 }
 
 glm::dmat4 Camera::view() const {
-	return glm::lookAt(_transform.pos(), _transform.pos() + _transform.fwd(), _transform.up());
+	return viewMatrix;
 }
 
 glm::dmat4 Camera::viewProjection() const {
-	return projection() * view();
+	return viewProjectionMatrix;
 }
 
 void Camera::setProjection(double fov, double aspect, double zNear, double zFar) {
@@ -20,8 +20,34 @@ void Camera::setProjection(double fov, double aspect, double zNear, double zFar)
 	this->zFar = zFar;
 }
 
-void Camera::UpdateCamera()
+void Camera::UpdateCamera(Transform transform)
 {
-
-	frustum.Update(viewProjection());
+	UpdateProjection();
+	UpdateView(transform);
+	UpdateViewProjection();
+	frustum.Update(viewProjectionMatrix);
 }
+
+void Camera::UpdateMainCamera()
+{
+	UpdateProjection();
+	UpdateView(_transform);
+	UpdateViewProjection();
+	frustum.Update(viewProjectionMatrix);
+}
+
+void Camera::UpdateProjection()
+{
+	projectionMatrix = glm::perspective(fov, aspect, zNear, zFar);
+}
+
+void Camera::UpdateView(Transform transform)
+{
+	viewMatrix = glm::lookAt(transform.pos(), transform.pos() + transform.fwd(), transform.up());
+}
+
+void Camera::UpdateViewProjection()
+{
+	viewProjectionMatrix = projectionMatrix * viewMatrix;
+}
+

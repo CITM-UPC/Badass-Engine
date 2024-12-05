@@ -100,12 +100,21 @@ public:
 
 	const auto& transform() const { return _transform; }
 	auto& transform() { return _transform; }
-    void UpdateCamera();
+    void UpdateCamera(Transform transform);
+	void UpdateMainCamera();
 
     Frustum frustum;
 	mat4 projection() const;
 	mat4 view() const;
 	mat4 viewProjection() const;
+
+    mat4 viewMatrix;
+    mat4 projectionMatrix;
+    mat4 viewProjectionMatrix;
+
+	void UpdateProjection();
+	void UpdateView(Transform transform);
+	void UpdateViewProjection();
 	void setProjection(double fov, double aspect, double zNear, double zFar);
 	
 
