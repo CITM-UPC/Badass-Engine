@@ -21,6 +21,7 @@ public:
     void renderConfigurationWindow();
     void renderGameObjectWindow();
     void renderInspectorWindow();
+    void renderMainMenuBar();
     void render();
     void processEvent(const SDL_Event& event);
     void renderConsoleWindow();
