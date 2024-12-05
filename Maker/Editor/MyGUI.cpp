@@ -246,8 +246,10 @@ void MyGUI::renderInspectorWindow()
             // Display and edit the X rotation
             ImGui::Text("X:"); ImGui::SameLine();
             ImGui::SetNextItemWidth(100);
+            bool rotationChanged = false;
             if (ImGui::InputText("##rotationX", rotStr[0], sizeof(rotStr[0]), ImGuiInputTextFlags_EnterReturnsTrue)) {
                 rotationArray[0] = std::stof(rotStr[0]);
+                rotationChanged = true;
             }
             // Display and edit the Y rotation
             ImGui::SameLine();
@@ -255,6 +257,7 @@ void MyGUI::renderInspectorWindow()
             ImGui::SetNextItemWidth(100);
             if (ImGui::InputText("##rotationY", rotStr[1], sizeof(rotStr[1]), ImGuiInputTextFlags_EnterReturnsTrue)) {
                 rotationArray[1] = std::stof(rotStr[1]);
+                rotationChanged = true;
             }
             // Display and edit the Z rotation
             ImGui::SameLine();
@@ -262,9 +265,12 @@ void MyGUI::renderInspectorWindow()
             ImGui::SetNextItemWidth(100);
             if (ImGui::InputText("##rotationZ", rotStr[2], sizeof(rotStr[2]), ImGuiInputTextFlags_EnterReturnsTrue)) {
                 rotationArray[2] = std::stof(rotStr[2]);
+                rotationChanged = true;
             }
-            // Set the new rotation for the GameObject
-            selectedGameObject->GetComponent<TransformComponent>()->transform().SetRotation(glm::vec3(rotationArray[0], rotationArray[1], rotationArray[2]));
+            // Set the new rotation for the GameObject only if it has changed
+            if (rotationChanged) {
+                selectedGameObject->GetComponent<TransformComponent>()->transform().SetRotation(glm::vec3(rotationArray[0], rotationArray[1], rotationArray[2]));
+            }
 
             // Display scale
             ImGui::Text("Scale");
