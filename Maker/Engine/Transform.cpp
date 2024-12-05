@@ -8,6 +8,37 @@
 
 
 
+const auto& Transform::GetRotation() const
+{
+    // Calculate the rotation matrix from the _left, _up, and _fwd vectors
+    mat4 rotationMatrix = mat4(1.0);
+    rotationMatrix[0] = vec4(_left, 0.0);
+    rotationMatrix[1] = vec4(_up, 0.0);
+    rotationMatrix[2] = vec4(_fwd, 0.0);
+
+    // Extract Euler angles from the rotation matrix
+    vec3 eulerAngles = glm::eulerAngles(glm::quat_cast(rotationMatrix));
+
+    // Convert radians to degrees
+    eulerAngles = glm::degrees(eulerAngles);
+
+    return eulerAngles;
+}
+
+const auto& Transform::GetScale() const
+{
+    glm::vec3 left(_mat[0][0], _mat[0][1], _mat[0][2]);
+    glm::vec3 up(_mat[1][0], _mat[1][1], _mat[1][2]);
+    glm::vec3 forward(_mat[2][0], _mat[2][1], _mat[2][2]);
+    // Calculate the scale vector from the _left, _up, and _fwd vectors
+    vec3 scale;
+    scale.x = glm::length(left);
+    scale.y = glm::length(up);
+    scale.z = glm::length(forward);
+
+    return scale;
+}
+
 void Transform::translate(const vec3& v) {
 	_mat = glm::translate(_mat, v);
 }
