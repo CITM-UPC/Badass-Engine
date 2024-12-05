@@ -1,6 +1,23 @@
 #pragma once
+#include "types.h"
 
+#include <array>
 #include "Transform.h"
+#include "BoundingBox.h"
+
+enum PlaneSide
+{
+    BEHIND = -1,
+    ON_PLANE = 0,
+    IN_FRONT = 1
+};
+
+enum FrustumContainment
+{
+    OUT = 0,
+    IN = 1,
+    INTERSECT = 2
+};
 
 struct Plane
 {
@@ -24,6 +41,23 @@ struct Plane
         normal /= magnitude;
         distance /= magnitude;
     }
+
+    PlaneSide SideOfPlane(const glm::vec3& point) const
+    {
+        float distanceToPoint = glm::dot(normal, point) + distance;
+        if (distanceToPoint < 0)
+        {
+            return BEHIND;
+        }
+        else if (distanceToPoint > 0)
+        {
+            return IN_FRONT;
+        }
+        else
+        {
+            return ON_PLANE;
+        }
+    }
 };
 
 struct Frustum : public Plane
@@ -35,6 +69,9 @@ struct Frustum : public Plane
     Plane right;
     Plane top;
     Plane bot;
+
+	Plane* m_plane[6] = { &left, &right, &top, &bot, &_near, &_far };
+    
 
     glm::vec3 vertices[8];
 
@@ -82,6 +119,51 @@ struct Frustum : public Plane
             vertices[i] = temp / temp.w;
         }
     }
+
+    // tests if a AaBox is within the frustrum
+    int ContainsBBox(BoundingBox refBox) const
+    {
+        vec3 vCorner[8]; 
+        int iTotalIn = 0;
+        // get the corners of the box into the vCorner array
+
+        // test all 8 corners against the 6 sides
+        // if all points are behind 1 specific plane, we are out
+        // if we are in with all points, then we are fully in for(int p = 0; p < 6; ++p) {
+
+        for (int p = 0; p < 6; ++p) {
+
+            int iInCount = 8;
+            int iPtIn = 1;
+            std::array<vec3, 8> v = refBox.vertices();
+
+            for (int i = 0; i < 8; ++i) {
+
+                // test this point against the planes
+                if (m_plane[p]->SideOfPlane(v[i]) == BEHIND) {
+                    iPtIn = 0;
+                    --iInCount;
+                }
+            }
+
+            // were all the points outside of plane p?
+            if(iInCount == 0)
+                return(OUT);
+
+            // check if they were all on the right side of the plane
+            iTotalIn += iPtIn;
+        }
+
+        // so if iTotalIn is 6, then all are inside the view
+        if (iTotalIn == 6)
+            return(IN);
+
+        // we must be partly in then otherwise
+        return(INTERSECT);
+ 
+}
+
+
 };
 
 class Camera {

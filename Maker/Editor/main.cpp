@@ -264,8 +264,17 @@ void configureCamera() {
 
 void updateGameObjectAndChildren(GameObject& gameObject) {
 	// Draw the current game object
+
+	GameObject testCamera;
+	// Testing Frustum Culling
+	for (auto& child : scene.children()) {
+		if (child.name == "Test Camera")
+		{
+			testCamera = child;
+		}
+	}
 	
-	if (gameObject.HasComponent<MeshLoader>()) {
+	if (gameObject.HasComponent<MeshLoader>() && testCamera.GetComponent<CameraComponent>()->camera().frustum.ContainsBBox(gameObject.boundingBox()) == 1 || testCamera.GetComponent<CameraComponent>()->camera().frustum.ContainsBBox(gameObject.boundingBox()) == 2) {
 		gameObject.draw();
 	}
 	
@@ -610,6 +619,7 @@ int main(int argc, char* argv[]) {
 	init_opengl();
 
 	GameObject testCamera;
+	testCamera.SetName("Test Camera");
 	testCamera.AddComponent<CameraComponent>()->camera().setProjection(45.0, 1.0, 0.1, 100.0);
 	testCamera.GetComponent<TransformComponent>()->transform().pos() = vec3(0, 1, 4);
 	testCamera.GetComponent<TransformComponent>()->transform().rotate(glm::radians(180.0), vec3(0, 1, 0));
