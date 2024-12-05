@@ -68,35 +68,6 @@ public:
 	void lookAt(const vec3& target);
 	void SetPosition(const vec3& position);
 	void alignCamera(const vec3& worldUp = vec3(0.0f, 1.0f, 0.0f));
-	void SetRotation(const vec3& eulerAngles) {
-		// Convert degrees to radians
-		vec3 eulerAnglesRad = glm::radians(eulerAngles);
-
-		// Convert Euler angles to quaternion
-		glm::quat quaternion = glm::quat(eulerAnglesRad);
-
-		// Convert quaternion to rotation matrix
-		mat4 rotationMatrix = glm::toMat4(quaternion);
-
-		// Calculate the new _left, _up, and _fwd vectors
-		_left = vec3(rotationMatrix[0]);
-		_up = vec3(rotationMatrix[1]);
-		_fwd = vec3(rotationMatrix[2]);
-	}
-	void SetScale(const vec3& scale) {
-		// Normalize the _left, _up, and _fwd vectors
-		vec3 leftNormalized = glm::normalize(_left);
-		vec3 upNormalized = glm::normalize(_up);
-		vec3 fwdNormalized = glm::normalize(_fwd);
-
-		// Scale the vectors by the provided scale
-		_left = leftNormalized * scale.x;
-		_up = upNormalized * scale.y;
-		_fwd = fwdNormalized * scale.z;
-
-		// Update the transformation matrix
-		_mat[0] = vec4(_left, 0.0);
-		_mat[1] = vec4(_up, 0.0);
-		_mat[2] = vec4(_fwd, 0.0);
-	}
+	void SetRotation(const vec3& eulerAngles);
+	void SetScale(const vec3& scale);
 };

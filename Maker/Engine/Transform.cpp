@@ -1,5 +1,10 @@
 #include "Transform.h"
+#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/euler_angles.hpp>
+
 
 
 
@@ -23,6 +28,41 @@ void Transform::alignCamera(const vec3& worldUp) {
     _fwd = fwd;
     _pos = _pos;
     _mat = mat4(vec4(_left, 0.0f), vec4(_up, 0.0f), vec4(_fwd, 0.0f), vec4(_pos, 1.0f));
+}
+
+void Transform::SetRotation(const vec3& eulerAngles)
+{
+    // Convert degrees to radians
+    vec3 eulerAnglesRad = glm::radians(eulerAngles);
+
+    // Convert Euler angles to quaternion
+    glm::quat quaternion = glm::quat(eulerAnglesRad);
+
+    // Convert quaternion to rotation matrix
+    mat4 rotationMatrix = glm::toMat4(quaternion);
+
+    // Calculate the new _left, _up, and _fwd vectors and normalize them
+    _left = glm::normalize(vec3(rotationMatrix[0]));
+    _up = glm::normalize(vec3(rotationMatrix[1]));
+    _fwd = glm::normalize(vec3(rotationMatrix[2]));
+}
+
+void Transform::SetScale(const vec3& scale)
+{
+    // Normalize the _left, _up, and _fwd vectors
+    vec3 leftNormalized = glm::normalize(_left);
+    vec3 upNormalized = glm::normalize(_up);
+    vec3 fwdNormalized = glm::normalize(_fwd);
+
+    // Scale the vectors by the provided scale
+    _left = leftNormalized * scale.x;
+    _up = upNormalized * scale.y;
+    _fwd = fwdNormalized * scale.z;
+
+    // Update the transformation matrix
+    _mat[0] = vec4(_left, 0.0);
+    _mat[1] = vec4(_up, 0.0);
+    _mat[2] = vec4(_fwd, 0.0);
 }
 
 void Transform::lookAt(const vec3& target) {
