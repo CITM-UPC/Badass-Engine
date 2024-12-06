@@ -186,18 +186,24 @@ glm::vec3 getRayFromMouse(int mouseX, int mouseY, const glm::mat4& projection, c
 }
 
 GameObject* raycastFromMouseToGameObject(int mouseX, int mouseY, const glm::mat4& projection, const glm::mat4& view, const glm::ivec2& viewportSize) {
+	// Obtener el origen del rayo en coordenadas del mundo
 	glm::vec3 rayOrigin = glm::vec3(glm::inverse(view) * glm::vec4(0, 0, 0, 1));
+
+	// Obtener la dirección del rayo desde las coordenadas del ratón
 	glm::vec3 rayDirection = getRayFromMouse(mouseX, mouseY, projection, view, viewportSize);
 
 	GameObject* hitObject = nullptr;
 
-	for (auto& go : gameObjects) {
+	// Iterar sobre todos los objetos en la escena
+	for (auto& go : scene.getChildren()) {
+		// Verificar si el rayo intersecta con el BoundingBox del objeto
 		if (rayIntersectsBoundingBox(rayOrigin, rayDirection, go.boundingBox())) {
 			hitObject = &go;
 			break;
 		}
 	}
 
+	// Si no se encuentra ningún objeto, hitObject será nullptr
 	return hitObject;
 }
 
@@ -658,6 +664,8 @@ int main(int argc, char* argv[]) {
 	SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 
 	while (window.isOpen()) {
+		projectionMatrix = mainCamera.GetComponent<CameraComponent>()->camera().projection();
+		viewMatrix = mainCamera.GetComponent<CameraComponent>()->camera().view();
 		GetMemoryUsage(gui);
 		const auto t0 = hrclock::now();
 		handleKeyboardInput();
@@ -709,7 +717,11 @@ int main(int argc, char* argv[]) {
 				//Hasta aquí
 				break;
 			case SDL_MOUSEBUTTONDOWN:
-				
+				if (event.button.button == SDL_BUTTON_LEFT) {
+					// Convertir las coordenadas del ratón a coordenadas del mundo
+					selectedGameObject = raycastFromMouseToGameObject(event.button.x, event.button.y, projectionMatrix, viewMatrix, WINDOW_SIZE);
+					
+				}
 			case SDL_MOUSEBUTTONUP:
 				mouseButton_func(event.button.button, event.button.state, event.button.x, event.button.y);
 				break;
