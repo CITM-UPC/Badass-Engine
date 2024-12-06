@@ -392,6 +392,14 @@ void MyGUI::renderInspectorWindow()
                     // Handle draw normals checkbox
                 }
             }
+
+            ImGui::Separator();
+
+			// Display Camera Component if the GameObject has a Camera component
+            if (selectedGameObject->HasComponent<CameraComponent>())
+            {
+				// Display Camera Info
+            }
         }
         else {
             // Display message if no GameObject is selected
