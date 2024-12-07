@@ -19,20 +19,22 @@ void FileManager::LoadFile(const char* path, GameObject& go)
 
 		
 	}
-	else if (extension == "png" || extension == "jpg" || extension == "bmp") {
-		// Load Texture
-		auto imageTexture = std::make_shared<Image>();
-		auto texture = std::make_shared<Texture>();
-		imageTexture->LoadTexture(path);
-		go.texturePath = path;
-		texture->setImage(imageTexture);
-		go.GetComponent<MeshLoader>()->GetMesh()->deleteCheckerTexture();
-		go.GetComponent<MeshLoader>()->SetImage(imageTexture);
-		go.GetComponent<MeshLoader>()->SetTexture(texture);
-	}
 	else {
 		std::cerr << "Unsupported file extension: " << extension << std::endl;
 	}
+}
+
+void FileManager::LoadTexture(const char* path, GameObject& go)
+{
+	// Load Texture
+	auto imageTexture = std::make_shared<Image>();
+	auto texture = std::make_shared<Texture>();
+	imageTexture->LoadTexture(path);
+	go.texturePath = path;
+	texture->setImage(imageTexture);
+	go.GetComponent<MeshLoader>()->GetMesh()->deleteCheckerTexture();
+	go.GetComponent<MeshLoader>()->SetImage(imageTexture);
+	go.GetComponent<MeshLoader>()->SetTexture(texture);
 }
 
 std::string FileManager::getFileExtension(const std::string& filePath)
