@@ -116,6 +116,9 @@ std::shared_ptr<T> GameObject::AddComponent(Args&&... args) {
 
 template <typename T>
 std::shared_ptr<T> GameObject::GetComponent() const {
+	if (this == nullptr) {
+		throw std::runtime_error("GameObject instance is null");
+	}
 	if (cachedComponentType == typeid(T) && cachedComponent) {
 		return std::static_pointer_cast<T>(cachedComponent);
 	}
