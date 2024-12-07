@@ -132,7 +132,7 @@ void MyGUI::renderGameObjectWindow()
 }
 
 
-void renderAssetNode(const std::filesystem::path& path) {
+void renderAssetNode(const std::filesystem::path& path, std::filesystem::path& selectedPath) {
     // Configura los flags del nodo del árbol
     ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
     if (std::filesystem::is_directory(path)) {
@@ -145,14 +145,13 @@ void renderAssetNode(const std::filesystem::path& path) {
     // Crea un nodo del árbol para el asset
     bool nodeOpen = ImGui::TreeNodeEx(path.filename().string().c_str(), nodeFlags);
     if (ImGui::IsItemClicked()) {
-        // Aquí puedes manejar la selección del asset
-        // Por ejemplo, puedes almacenar la ruta del asset seleccionado en una variable
+        selectedPath = path;
     }
 
     // Si el nodo está abierto y es un directorio, renderiza sus hijos
     if (nodeOpen && std::filesystem::is_directory(path)) {
         for (const auto& entry : std::filesystem::directory_iterator(path)) {
-            renderAssetNode(entry.path());
+            renderAssetNode(entry.path(), selectedPath);
         }
         ImGui::TreePop();
     }
@@ -167,9 +166,27 @@ void MyGUI::renderAssetWindow() {
     if (ImGui::Begin("Assets", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove)) {
         // Ruta del directorio de assets
         std::filesystem::path assetDirectory = "Assets";
+        static std::filesystem::path selectedPath;
 
         // Renderiza el nodo raíz del árbol de assets
-        renderAssetNode(assetDirectory);
+        renderAssetNode(assetDirectory, selectedPath);
+
+        // Detecta si se presiona la tecla "Suprimir" y hay un archivo o directorio seleccionado
+        if (!selectedPath.empty() && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Delete))) {
+            try {
+                if (std::filesystem::is_directory(selectedPath)) {
+                    std::filesystem::remove_all(selectedPath);
+                }
+                else {
+                    std::filesystem::remove(selectedPath);
+                }
+                selectedPath.clear(); // Limpia la selección después de eliminar
+            }
+            catch (const std::filesystem::filesystem_error& e) {
+                // Maneja el error si ocurre
+                std::cerr << "Error al eliminar el archivo o directorio: " << e.what() << std::endl;
+            }
+        }
     }
     // Finaliza la ventana de assets
     ImGui::End();
