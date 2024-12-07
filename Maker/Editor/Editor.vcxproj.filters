@@ -24,12 +24,18 @@
     <ClCompile Include="MyWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Importer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MyGUI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MyWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Importer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -371,7 +371,9 @@ void MyGUI::renderInspectorWindow()
                         0
                     );
                     if (filePath) {
-                        Log::getInstance().logMessage("Didac mete tu la funcion que yo no se como se hace");
+						fileManager.LoadTexture(filePath, *selectedGameObject);
+                        Log::getInstance().logMessage("Loaded Texture from:");
+                        Log::getInstance().logMessage(filePath);
                     }
                 }
 
@@ -433,18 +435,7 @@ void MyGUI::renderMainMenuBar()
                     go.SetName(fileName); // Use the extracted file name
                     fileManager.LoadFile(filePath, go);
                     scene.emplaceChild(go);
-                    // This is for testing parenting, comment the lines below if you don't want to test parenting
-                    // Get the first child of the scene
-                    if (!scene.getChildren().empty()) {
-                        GameObject& firstChild = scene.getChildren().front();
-                        GameObject lastChild = scene.getChildren().back();
-                        lastChild.setParent(firstChild);
-                    }
-                    else {
-                        // If there are no children, add the new GameObject to the scene
-                        scene.emplaceChild(go);
-                    }
-                    //
+                   
                 }
             }
             if (ImGui::MenuItem("Quit")) {

@@ -81,11 +81,13 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Importer.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MyGUI.cpp" />
     <ClCompile Include="MyWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Importer.h" />
     <ClInclude Include="MyGUI.h" />
     <ClInclude Include="MyWindow.h" />
   </ItemGroup>
