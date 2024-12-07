@@ -25,7 +25,9 @@ public:
     void render();
     void processEvent(const SDL_Event& event);
     void renderConsoleWindow();
+    void renderAssetWindow();
     void renderGameObjectNode(GameObject* gameObject);
+	void renderAssetsWindow();
 
     void ManagePosition();
 

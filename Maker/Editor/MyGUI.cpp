@@ -132,6 +132,48 @@ void MyGUI::renderGameObjectWindow()
 }
 
 
+void renderAssetNode(const std::filesystem::path& path) {
+    // Configura los flags del nodo del árbol
+    ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
+    if (std::filesystem::is_directory(path)) {
+        nodeFlags |= ImGuiTreeNodeFlags_DefaultOpen;
+    }
+    else {
+        nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+    }
+
+    // Crea un nodo del árbol para el asset
+    bool nodeOpen = ImGui::TreeNodeEx(path.filename().string().c_str(), nodeFlags);
+    if (ImGui::IsItemClicked()) {
+        // Aquí puedes manejar la selección del asset
+        // Por ejemplo, puedes almacenar la ruta del asset seleccionado en una variable
+    }
+
+    // Si el nodo está abierto y es un directorio, renderiza sus hijos
+    if (nodeOpen && std::filesystem::is_directory(path)) {
+        for (const auto& entry : std::filesystem::directory_iterator(path)) {
+            renderAssetNode(entry.path());
+        }
+        ImGui::TreePop();
+    }
+}
+
+void MyGUI::renderAssetWindow() {
+    // Configura el tamaño y la posición de la ventana de assets
+    ImGui::SetNextWindowSize(ImVec2(480, 200), ImGuiCond_Appearing);
+    ImGui::SetNextWindowPos(ImVec2(300, 450), ImGuiCond_Appearing);
+
+    // Inicia la ventana de assets con flags específicos
+    if (ImGui::Begin("Assets", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove)) {
+        // Ruta del directorio de assets
+        std::filesystem::path assetDirectory = "Assets";
+
+        // Renderiza el nodo raíz del árbol de assets
+        renderAssetNode(assetDirectory);
+    }
+    // Finaliza la ventana de assets
+    ImGui::End();
+}
 
 void MyGUI::renderGameObjectNode(GameObject* gameObject)
 {
@@ -500,6 +542,8 @@ void MyGUI::render() {
 	renderInspectorWindow();
 	//Console window, Comment the line below if you don't want the Console window to appear
 	renderConsoleWindow();
+	//Asset window, Comment the line below if you don't want the Asset window to appear
+	renderAssetWindow();
     
     // Ensure no two GameObjects have the same name
     std::unordered_set<std::string> nameSet;
