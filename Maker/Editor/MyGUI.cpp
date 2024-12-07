@@ -373,7 +373,7 @@ void MyGUI::renderInspectorWindow()
                         0
                     );
                     if (filePath) {
-						fileManager.LoadTexture(filePath, *selectedGameObject);
+						fileManager.LoadTexture(filePath, *persistentSelectedGameObject);
                         Log::getInstance().logMessage("Loaded Texture from:");
                         Log::getInstance().logMessage(filePath);
                     }
