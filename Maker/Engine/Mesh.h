@@ -11,9 +11,11 @@
 #include "BufferObject.h"
 #include "BoundingBox.h"
 #include "MeshLoader.h"
+#include "../Editor/MeshImporter.h"
 //#include "../Editor/MyGUI.h"
 
-
+class MeshImporter;
+struct MeshDTO;
 
 class Mesh
 {
@@ -33,8 +35,8 @@ class Mesh
 	//MeshLoader* _meshLoader;
 
 public:
-
 	Mesh();
+	Mesh(std::vector<glm::vec3> vertices, std::vector<glm::vec2> tex_coords, std::vector<glm::vec3> normals, std::vector<glm::u8vec3> colors, std::vector<unsigned int> indices);
 
 	const auto& vertices() const { return _vertices; }
 	const auto& indices() const { return _indices; }
@@ -47,6 +49,7 @@ public:
 	void loadColors(const glm::u8vec3* colors, size_t num_colors);
 	void draw() const;
 	void drawNormals(float length) const;
+	//void LoadFromMeshDTO(MeshImporter::MeshDTO& meshDTO);
 
 	void LoadFile(const char* filePath);
 
