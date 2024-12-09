@@ -8,7 +8,9 @@ void FileManager::LoadFile(const char* path, GameObject& go)
 	if (extension == "obj" || extension == "fbx" || extension == "dae") {
 		// Load Mesh
 		auto mesh = std::make_shared<Mesh>();
-		mesh->LoadFile(path);
+		mesh = meshImporter.ImportMesh(path);
+		meshImporter.SaveMeshToFile(mesh, "Library/Meshes/mesh.mesh");
+		//mesh->LoadFile(path);
 		go.meshPath = path;
 		go.AddComponent<MeshLoader>()->SetMesh(mesh);
 		go.setMesh(mesh);
@@ -35,6 +37,28 @@ void FileManager::LoadTexture(const char* path, GameObject& go)
 	go.GetComponent<MeshLoader>()->GetMesh()->deleteCheckerTexture();
 	go.GetComponent<MeshLoader>()->SetImage(imageTexture);
 	go.GetComponent<MeshLoader>()->SetTexture(texture);
+}
+
+void FileManager::LoadCustomFile(const char* path, GameObject& go)
+{
+	// Load file
+	std::string extension = getFileExtension(path);
+
+	if (extension == "mesh") {
+		// Load Mesh
+		auto mesh = std::make_shared<Mesh>();
+		mesh = meshImporter.LoadMeshFromFile(path);
+		go.meshPath = path;
+		go.AddComponent<MeshLoader>()->SetMesh(mesh);
+		go.setMesh(mesh);
+
+		// Set ID
+		int newID = scene.children().back().id;
+		go.id = newID + 1;
+	}
+	else {
+		std::cerr << "Unsupported file extension: " << extension << std::endl;
+	}
 }
 
 std::string FileManager::getFileExtension(const std::string& filePath)

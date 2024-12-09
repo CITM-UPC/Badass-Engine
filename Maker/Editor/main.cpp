@@ -637,10 +637,6 @@ int main(int argc, char* argv[]) {
 	mainCamera.GetComponent<CameraComponent>()->camera().transform().rotate(glm::radians(180.0), vec3(0, 1, 0));
 	scene.emplaceChild(mainCamera);
 
-	// Testing Mesh Importer
-	/*MeshImporter importer;
-	MeshImporter::MeshDTO meshDTO;*/
-
 	SDL_Event event;
 	char* dropped_filePath;
 	auto mesh = make_shared<Mesh>();
@@ -652,10 +648,6 @@ int main(int argc, char* argv[]) {
 	scene.name = "Scene";
 
 	mesh->LoadFile("Assets/BakerHouse.fbx");
-	
-	/*importer.SaveMeshToFile(meshDTO, "Library/Meshes/BakerHouse.txt");
-	MeshImporter::MeshDTO loadedMesh = importer.LoadMeshFromFile("Library/Meshes/BakerHouse.txt");
-	mesh->LoadFromMeshDTO(loadedMesh);*/
 	GameObject go;
 	go.id = 1;
 	go.meshPath = "Assets/BakerHouse.fbx";

@@ -6,6 +6,7 @@
 #include <string>
 #include <vector> // Include the vector header
 #include <imgui.h>
+#include "FileManager.h"
 
 using namespace std;
 extern GameObject* selectedGameObject; // Define selectedGameObject

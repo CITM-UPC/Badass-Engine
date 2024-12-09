@@ -1,5 +1,4 @@
 #include "MyGUI.h"
-#include "Engine/FileManager.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_video.h>
 #include <SDL2/SDL_opengl.h>
@@ -496,12 +495,22 @@ void MyGUI::renderMainMenuBar()
                     go.SetName(fileName); // Use the extracted file name
                     fileManager.LoadFile(filePath, go);
                     scene.emplaceChild(go);
+
+                    
                    
                 }
             }
             if (ImGui::MenuItem("Quit")) {
                 SDL_Quit();
                 exit(0);
+            }
+            if (ImGui::MenuItem("Load Custom"))
+            {
+                // Testing Load Custom Format File
+				GameObject go;
+				go.SetName("Custom");
+				fileManager.LoadCustomFile("Library/Meshes/mesh.mesh", go);
+				scene.emplaceChild(go);
             }
             ImGui::EndMenu(); // Close the "File" menu
 

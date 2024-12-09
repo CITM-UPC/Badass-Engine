@@ -11,11 +11,6 @@
 #include "BufferObject.h"
 #include "BoundingBox.h"
 #include "MeshLoader.h"
-#include "../Editor/MeshImporter.h"
-//#include "../Editor/MyGUI.h"
-
-class MeshImporter;
-struct MeshDTO;
 
 class Mesh
 {
@@ -32,7 +27,7 @@ class Mesh
 
 	BoundingBox _boundingBox;
 
-	//MeshLoader* _meshLoader;
+	
 
 public:
 	Mesh();
@@ -41,7 +36,7 @@ public:
 	const auto& vertices() const { return _vertices; }
 	const auto& indices() const { return _indices; }
 	const auto& boundingBox() const { return _boundingBox; }
-	//const auto& meshLoader() const { return *_meshLoader; }
+	
 
 	void load(const glm::vec3* vertices, size_t num_verts, unsigned int* indices, size_t num_indexs);
 	void loadTexCoords(const glm::vec2* tex_coords, size_t num_tex_coords);

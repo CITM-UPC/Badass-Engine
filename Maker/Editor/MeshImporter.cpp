@@ -1,65 +1,177 @@
-//#include "MeshImporter.h"
-//
-//MeshImporter::MeshDTO MeshImporter::ImportMesh(const aiMesh* mesh)
-//{
-//    MeshDTO meshDTO;
-//
-//    for (unsigned int i = 0; i < mesh->mNumVertices; i++)
-//    {
-//        meshDTO.vertices.push_back(glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z));
-//        meshDTO.normals.push_back(glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z));
-//        if (mesh->mTextureCoords[0])
-//        {
-//            meshDTO.texCoords.push_back(glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y));
-//        }
-//        else
-//        {
-//            meshDTO.texCoords.push_back(glm::vec2(0.0f, 0.0f));
-//        }
-//        if (mesh->mColors[0])
-//        {
-//            meshDTO.colors.push_back(glm::u8vec3(mesh->mColors[0][i].r, mesh->mColors[0][i].g, mesh->mColors[0][i].b));
-//        }
-//        else
-//        {
-//            meshDTO.colors.push_back(glm::u8vec3(255, 255, 255));
-//        }
-//    }
-//
-//    for (unsigned int i = 0; i < mesh->mNumFaces; i++)
-//    {
-//        aiFace face = mesh->mFaces[i];
-//        for (unsigned int j = 0; j < face.mNumIndices; j++)
-//        {
-//            meshDTO.indices.push_back(face.mIndices[j]);
-//        }
-//    }
-//
-//    return meshDTO;
-//}
-//
-//void MeshImporter::SaveMeshToFile(const MeshDTO& mesh, const std::string& filePath)
-//{
-//    std::ofstream file(filePath);
-//    if (!file.is_open())
-//    {
-//        throw std::runtime_error("Failed to open file for writing: " + filePath);
-//    }
-//
-//    file << mesh;
-//    file.close();
-//}
-//
-//MeshImporter::MeshDTO MeshImporter::LoadMeshFromFile(const std::string& filePath)
-//{
-//    MeshDTO mesh;
-//    std::ifstream file(filePath);
-//    if (!file.is_open())
-//    {
-//        throw std::runtime_error("Failed to open file for reading: " + filePath);
-//    }
-//
-//    file >> mesh;
-//    file.close();
-//    return mesh;
-//}
+#include "MeshImporter.h"
+#include <filesystem>
+
+std::shared_ptr<Mesh> MeshImporter::ImportMesh(const char* filePath)
+{
+	auto mesh = std::make_shared<Mesh>();
+	const aiScene* scene = aiImportFile(filePath, aiProcessPreset_TargetRealtime_MaxQuality);
+
+	if (scene != nullptr && scene->HasMeshes()) {
+		std::vector<glm::vec3> all_vertices;
+		std::vector<unsigned int> all_indices;
+		std::vector<glm::vec2> all_texCoords;
+		std::vector<glm::vec3> all_normals;
+		std::vector<glm::u8vec3> all_colors;
+
+		unsigned int vertex_offset = 0;
+
+		for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
+			aiMesh* mesh = scene->mMeshes[i];
+
+			// Copy vertices
+			//gui->logMessage("Loading mesh vertices");
+			for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
+				all_vertices.push_back(glm::vec3(mesh->mVertices[j].x, mesh->mVertices[j].y, mesh->mVertices[j].z));
+			}
+
+			// Copy indices
+			//gui->logMessage("Loading mesh indices");
+			for (unsigned int j = 0; j < mesh->mNumFaces; j++) {
+				aiFace& face = mesh->mFaces[j];
+				for (unsigned int k = 0; k < face.mNumIndices; k++) {
+					all_indices.push_back(face.mIndices[k] + vertex_offset);
+				}
+			}
+
+			// Copy texture coordinates
+			//gui->logMessage("Loading mesh texture coordinates");
+			if (mesh->HasTextureCoords(0)) {
+				for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
+					all_texCoords.push_back(glm::vec2(mesh->mTextureCoords[0][j].x, -mesh->mTextureCoords[0][j].y));
+				}
+			}
+
+			// Copy normals
+			//gui->logMessage("Loading mesh normals");
+			if (mesh->HasNormals()) {
+				for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
+					all_normals.push_back(glm::vec3(mesh->mNormals[j].x, mesh->mNormals[j].y, mesh->mNormals[j].z));
+				}
+			}
+
+			// Copy colors
+			//gui->logMessage("Loading mesh colors");
+			if (mesh->HasVertexColors(0)) {
+				for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
+					all_colors.push_back(glm::u8vec3(mesh->mColors[0][j].r * 255, mesh->mColors[0][j].g * 255, mesh->mColors[0][j].b * 255));
+				}
+			}
+
+			vertex_offset += mesh->mNumVertices;
+		}
+
+		// Load the combined mesh data
+		mesh->load(all_vertices.data(), all_vertices.size(), all_indices.data(), all_indices.size());
+
+		if (!all_texCoords.empty()) {
+			mesh->loadTexCoords(all_texCoords.data(), all_texCoords.size());
+		}
+
+		if (!all_normals.empty()) {
+			mesh->loadNormals(all_normals.data(), all_normals.size());
+		}
+
+		if (!all_colors.empty()) {
+			mesh->loadColors(all_colors.data(), all_colors.size());
+		}
+
+		aiReleaseImport(scene);
+	}
+	else {
+		// Handle error
+		Log::getInstance().logMessage("Error importing mesh:");
+		Log::getInstance().logMessage(filePath);
+	}
+	return mesh;
+}
+
+void MeshImporter::SaveMeshToFile(const std::shared_ptr<Mesh>& mesh, const std::string& filePath)
+{
+	// Check if the directory exists
+	std::filesystem::path path(filePath);
+	if (!std::filesystem::exists(path.parent_path())) {
+		throw std::runtime_error("Directory does not exist: " + path.parent_path().string());
+	}
+
+	std::ofstream outFile(filePath, std::ios::out);
+	if (!outFile.is_open()) {
+		throw std::runtime_error("Failed to open file for writing: " + filePath);
+	}
+	outFile << mesh;
+	outFile.close();
+}
+
+std::shared_ptr<Mesh> MeshImporter::LoadMeshFromFile(const std::string& filePath)
+{
+	std::ifstream inFile(filePath, std::ios::in);
+	if (!inFile.is_open()) {
+		throw std::runtime_error("Failed to open file for reading: " + filePath);
+	}
+	std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>();
+	inFile >> mesh;
+	inFile.close();
+	return mesh;
+}
+
+std::ostream& operator<<(std::ostream& os, const std::shared_ptr<Mesh>& mesh)
+{
+	if (!mesh) {
+		return os;
+	}
+
+	// Serialize vertices
+	const auto& vertices = mesh->vertices();
+	os << vertices.size() << "\n";
+	for (const auto& vertex : vertices) {
+		os << vertex.x << " " << vertex.y << " " << vertex.z << "\n";
+	}
+
+	// Serialize indices
+	const auto& indices = mesh->indices();
+	os << indices.size() << "\n";
+	for (const auto& index : indices) {
+		os << index << "\n";
+	}
+
+	// Serialize bounding box
+	const auto& boundingBox = mesh->boundingBox();
+	os << boundingBox.min.x << " " << boundingBox.min.y << " " << boundingBox.min.z << "\n";
+	os << boundingBox.max.x << " " << boundingBox.max.y << " " << boundingBox.max.z << "\n";
+
+	return os;
+}
+
+std::istream& operator>>(std::istream& is, std::shared_ptr<Mesh>& mesh)
+{
+	if (!mesh) {
+		mesh = std::make_shared<Mesh>();
+	}
+
+	// Deserialize vertices
+	size_t verticesSize;
+	is >> verticesSize;
+	std::vector<glm::vec3> vertices(verticesSize);
+	for (auto& vertex : vertices) {
+		is >> vertex.x >> vertex.y >> vertex.z;
+	}
+	mesh->load(vertices.data(), vertices.size(), nullptr, 0);
+
+	// Deserialize indices
+	size_t indicesSize;
+	is >> indicesSize;
+	std::vector<unsigned int> indices(indicesSize);
+	for (auto& index : indices) {
+		is >> index;
+	}
+	mesh->load(vertices.data(), vertices.size(), indices.data(), indices.size());
+
+	// Deserialize bounding box
+	glm::vec3 min, max;
+	is >> min.x >> min.y >> min.z;
+	is >> max.x >> max.y >> max.z;
+	BoundingBox boundingBox{ min, max };
+	// Assuming Mesh has a method to set bounding box
+	// mesh->setBoundingBox(boundingBox);
+
+	return is;
+}

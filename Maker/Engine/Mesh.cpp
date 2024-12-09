@@ -62,27 +62,6 @@ void Mesh::loadColors(const glm::u8vec3* colors, size_t num_colors)
 	_colors_buffer.loadData(colors, num_colors * sizeof(glm::u8vec3));
 }
 
-//void Mesh::LoadFromMeshDTO(MeshImporter::MeshDTO& meshDTO)
-//{
-//	// Load vertices and indices
-//	load(meshDTO.vertices.data(), meshDTO.vertices.size(), meshDTO.indices.data(), meshDTO.indices.size());
-//
-//	// Load texture coordinates if available
-//	if (!meshDTO.texCoords.empty()) {
-//		loadTexCoords(meshDTO.texCoords.data(), meshDTO.texCoords.size());
-//	}
-//
-//	// Load normals if available
-//	if (!meshDTO.normals.empty()) {
-//		loadNormals(meshDTO.normals.data(), meshDTO.normals.size());
-//	}
-//
-//	// Load colors if available
-//	if (!meshDTO.colors.empty()) {
-//		loadColors(meshDTO.colors.data(), meshDTO.colors.size());
-//	}
-//}
-
 void Mesh::draw() const
 {
 
