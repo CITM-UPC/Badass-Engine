@@ -249,7 +249,7 @@ void MyGUI::renderGameObjectNode(GameObject* gameObject)
             if (droppedGameObject != gameObject) {
 				pendingOperations.push([gameObject, droppedGameObject]() {
                     GameObject go = *droppedGameObject;
-					go.setParent(*gameObject);
+                    go.setParent(*gameObject);
 					selectedGameObject = gameObject;
 					persistentSelectedGameObject = gameObject;
 					});
@@ -507,7 +507,7 @@ void MyGUI::renderInspectorWindow()
 
                 // Add Texture button
                 if (ImGui::Button("Texture")) {
-                    const char* filterPatterns[1] = { "*.png" };
+                    const char* filterPatterns[2] = { "*.png", "*.tex"};
                     const char* filePath = tinyfd_openFileDialog(
                         "Select a texture file",
                         "Assets",
@@ -603,12 +603,51 @@ void MyGUI::renderMainMenuBar()
             }
             if (ImGui::MenuItem("Load Custom"))
             {
-                // Testing Load Custom Format File
-				GameObject go;
-				go.SetName("Custom");
-				fileManager.LoadCustomFile("Library/Meshes/mesh.mesh", go);
-				scene.emplaceChild(go);
+                // Open file dialog to select an FBX file
+                const char* filterPatterns[1] = { "*.mesh" };
+                const char* filePath = tinyfd_openFileDialog(
+                    "Select a mesh file",
+                    "Assets",
+                    1,
+                    filterPatterns,
+                    NULL,
+                    0
+                );
+                if (filePath) {
+                    std::filesystem::path path(filePath);
+                    std::string fileName = path.stem().string(); // Extract the file name without extension
+                    GameObject go;
+                    go.SetName(fileName); // Use the extracted file name
+					fileManager.LoadCustomFile(filePath, go);
+                    scene.emplaceChild(go);
+
+
+
+                }
             }
+			if (ImGui::MenuItem("Import Texture"))
+			{
+                // Open file dialog to select an FBX file
+                const char* filterPatterns[1] = { "*.png" };
+                const char* filePath = tinyfd_openFileDialog(
+                    "Select a Texture file",
+                    "Assets",
+                    1,
+                    filterPatterns,
+                    NULL,
+                    0
+                );
+                if (filePath) {
+                    std::filesystem::path path(filePath);
+                    std::string fileName = path.stem().string(); // Extract the file name without extension
+					fileManager.ImportTexture(filePath);
+                    
+
+
+
+                }
+				
+			}
             ImGui::EndMenu(); // Close the "File" menu
 
         }

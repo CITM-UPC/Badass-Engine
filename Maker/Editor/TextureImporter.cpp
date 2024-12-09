@@ -3,56 +3,71 @@
 
 std::shared_ptr<Image> TextureImporter::ImportTexture(const std::string& pathFile)
 {
-	auto texture = std::make_shared<Image>();
+	auto image = std::make_shared<Image>();
 	auto img = ilGenImage();
 	ilBindImage(img);
 	ilLoadImage((const wchar_t*)pathFile.c_str());
 	auto width = ilGetInteger(IL_IMAGE_WIDTH);
-
 	auto height = ilGetInteger(IL_IMAGE_HEIGHT);
-
 	auto channels = ilGetInteger(IL_IMAGE_CHANNELS);
 	auto data = ilGetData();
 
-	//load image as a texture in VRAM
-	texture->load(width, height, channels, data);
+	// Load image as a texture in VRAM
+	image->load(width, height, channels, data);
 
-	//now we can delete image from RAM
+	// Now we can delete image from RAM
 	ilDeleteImage(img);
+	return image;
+}
+
+void TextureImporter::SaveTextureToFile(const std::shared_ptr<Image>& texture, const std::string& filePath)
+{
+	std::ofstream os(filePath, std::ios::binary);
+	os << texture;
+}
+
+std::shared_ptr<Image> TextureImporter::LoadTextureFromFile(const std::string& filePath)
+{
+	std::ifstream is(filePath, std::ios::binary);
+	std::shared_ptr<Image> texture = std::make_shared<Image>();
+	is >> texture;
 	return texture;
 }
 
-std::ostream& operator<<(std::ostream& os, const std::shared_ptr<Image>& tex)
+std::ostream& operator<<(std::ostream& os, const std::shared_ptr<Image>& img)
 {
-	if (!tex) {
-		return os;
-	}
-
-	os << tex->width() << " " << tex->height() << " " << tex->channels() << " ";
-	size_t dataSize = tex->width() * tex->height() * tex->channels();
-	for (size_t i = 0; i < dataSize; ++i)
-	{
-		os << static_cast<int>(tex->data()[i]) << " ";
-	}
+	ImageDTO dto(img);
+	os.write((const char*)&dto.width, sizeof(dto.width));
+	os.write((const char*)&dto.height, sizeof(dto.height));
+	os.write((const char*)&dto.channels, sizeof(dto.channels));
+	os.write(dto.data.data(), dto.data.size());
 	return os;
+
 }
 
-std::istream& operator>>(std::istream& is, std::shared_ptr<Image>& tex)
+std::istream& operator>>(std::istream& is, std::shared_ptr<Image>& img)
 {
-    if (!tex) {
-        tex = std::make_shared<Image>();
-    }
+	ImageDTO dto;
+	is.read((char*)&dto.width, sizeof(dto.width));
+	is.read((char*)&dto.height, sizeof(dto.height));
+	is.read((char*)&dto.channels, sizeof(dto.channels));
 
-    int width, height, channels;
-    is >> width >> height >> channels;
-    size_t dataSize = width * height * channels;
-    std::vector<unsigned char> data(dataSize);
-    for (size_t i = 0; i < dataSize; ++i)
-    {
-        int value;
-        is >> value;
-        data[i] = static_cast<unsigned char>(value);
-    }
-    tex->load(width, height, channels, data.data());
-    return is;
+	dto.data.resize(dto.width * dto.height * dto.channels);
+	is.read(dto.data.data(), dto.data.size());
+
+	img->load(dto.width, dto.height, dto.channels, dto.data.data());
+
+	return is;
+
+}
+
+GLenum formatFromChannels(unsigned char channels)
+{
+	switch (channels) {
+	case 1: return GL_LUMINANCE;
+	case 2: return GL_LUMINANCE_ALPHA;
+	case 3: return GL_RGB;
+	case 4: return GL_RGBA;
+	default: return GL_RGB;
+	}
 }

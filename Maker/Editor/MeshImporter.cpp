@@ -92,7 +92,7 @@ void MeshImporter::SaveMeshToFile(const std::shared_ptr<Mesh>& mesh, const std::
 	// Check if the directory exists
 	std::filesystem::path path(filePath);
 	if (!std::filesystem::exists(path.parent_path())) {
-		throw std::runtime_error("Directory does not exist: " + path.parent_path().string());
+		std::filesystem::create_directories(path.parent_path());
 	}
 
 	std::ofstream outFile(filePath, std::ios::out);

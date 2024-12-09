@@ -40,6 +40,7 @@ void Image::load(int width, int height, int channels, void* data) {
 	_width = width;
 	_height = height;
 	_channels = channels;
+	_data = std::make_unique<char[]>(width * height * channels);
 
 	if (!_id) glGenTextures(1, &_id);
 
@@ -51,44 +52,6 @@ void Image::load(int width, int height, int channels, void* data) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-}
-
-struct ImageDTO {
-	unsigned short width = 0;
-	unsigned short height = 0;
-	unsigned char channels = 0;
-	std::vector<char> data;
-
-	ImageDTO() = default;
-
-	explicit ImageDTO(const Image& img) : width(img.width()), height(img.height()), channels(img.channels()), data(width* height* channels) {
-		img.bind();
-		glGetTexImage(GL_TEXTURE_2D, 0, formatFromChannels(img.channels()), GL_UNSIGNED_BYTE, data.data());
-	}
-};
-
-std::ostream& operator<<(std::ostream& os, const Image& img) {
-	ImageDTO dto(img);
-	os.write((const char*)&dto.width, sizeof(dto.width));
-	os.write((const char*)&dto.height, sizeof(dto.height));
-	os.write((const char*)&dto.channels, sizeof(dto.channels));
-	os.write(dto.data.data(), dto.data.size());
-	return os;
-}
-
-
-std::istream& operator>>(std::istream& is, Image& img) {
-	ImageDTO dto;
-	is.read((char*)&dto.width, sizeof(dto.width));
-	is.read((char*)&dto.height, sizeof(dto.height));
-	is.read((char*)&dto.channels, sizeof(dto.channels));
-
-	dto.data.resize(dto.width * dto.height * dto.channels);
-	is.read(dto.data.data(), dto.data.size());
-
-	img.load(dto.width, dto.height, dto.channels, dto.data.data());
-
-	return is;
 }
 
 void Image::LoadTexture(const std::string& path)
