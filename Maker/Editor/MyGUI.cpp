@@ -268,7 +268,7 @@ void MyGUI::renderGameObjectNode(GameObject* gameObject)
 
 
  void renderAssetNode(const std::filesystem::path& path, std::filesystem::path& selectedPath) {
-    // Configura los flags del nodo del árbol
+    // Configura los flags del nodo del ï¿½rbol
     ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
     if (std::filesystem::is_directory(path)) {
         nodeFlags |= ImGuiTreeNodeFlags_DefaultOpen;
@@ -277,13 +277,13 @@ void MyGUI::renderGameObjectNode(GameObject* gameObject)
         nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
     }
 
-    // Crea un nodo del árbol para el asset
+    // Crea un nodo del ï¿½rbol para el asset
     bool nodeOpen = ImGui::TreeNodeEx(path.filename().string().c_str(), nodeFlags);
     if (ImGui::IsItemClicked()) {
         selectedPath = path;
     }
 
-    // Si el nodo está abierto y es un directorio, renderiza sus hijos
+    // Si el nodo estï¿½ abierto y es un directorio, renderiza sus hijos
     if (nodeOpen && std::filesystem::is_directory(path)) {
         for (const auto& entry : std::filesystem::directory_iterator(path)) {
             renderAssetNode(entry.path(), selectedPath);
@@ -297,10 +297,11 @@ void MyGUI::renderAssetWindow() {
     ImGui::SetNextWindowSize(ImVec2(480, 200), ImGuiCond_Appearing);
     ImGui::SetNextWindowPos(ImVec2(300, 400), ImGuiCond_Appearing); // Adjusted Y-coordinate to move the window up
 
+
     // Begin the asset window with specific flags
     if (ImGui::Begin("Assets", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize)) {
         // Asset directory path
-        std::filesystem::path assetDirectory = "Assets";
+        std::filesystem::path assetDirectory = "Library";
         static std::filesystem::path selectedPath;
 
         // Render the root node of the asset tree
