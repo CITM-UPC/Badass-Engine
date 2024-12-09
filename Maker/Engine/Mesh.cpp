@@ -49,6 +49,7 @@ void Mesh::load(const glm::vec3* vertices, size_t num_verts, unsigned int* indic
 
 void Mesh::loadTexCoords(const glm::vec2* tex_coords, size_t num_tex_coords)
 {
+	_texCoords.assign(tex_coords, tex_coords + num_tex_coords);
 	_texCoords_buffer.loadData(tex_coords, num_tex_coords * sizeof(glm::vec2));
 }
 

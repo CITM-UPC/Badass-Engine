@@ -3,6 +3,8 @@
 
 std::shared_ptr<Mesh> MeshImporter::ImportMesh(const char* filePath)
 {
+	Log::getInstance().logMessage("Importing Mesh from:");
+	Log::getInstance().logMessage(filePath);
 	auto mesh = std::make_shared<Mesh>();
 	const aiScene* scene = aiImportFile(filePath, aiProcessPreset_TargetRealtime_MaxQuality);
 
@@ -133,6 +135,13 @@ std::ostream& operator<<(std::ostream& os, const std::shared_ptr<Mesh>& mesh)
 		os << index << "\n";
 	}
 
+	// Serialize texture coordinates
+	const auto& texCoords = mesh->texCoords();
+	os << texCoords.size() << "\n";
+	for (const auto& texCoord : texCoords) {
+		os << texCoord.x << " " << texCoord.y << "\n";
+	}
+
 	// Serialize bounding box
 	const auto& boundingBox = mesh->boundingBox();
 	os << boundingBox.min.x << " " << boundingBox.min.y << " " << boundingBox.min.z << "\n";
@@ -154,7 +163,6 @@ std::istream& operator>>(std::istream& is, std::shared_ptr<Mesh>& mesh)
 	for (auto& vertex : vertices) {
 		is >> vertex.x >> vertex.y >> vertex.z;
 	}
-	mesh->load(vertices.data(), vertices.size(), nullptr, 0);
 
 	// Deserialize indices
 	size_t indicesSize;
@@ -163,7 +171,20 @@ std::istream& operator>>(std::istream& is, std::shared_ptr<Mesh>& mesh)
 	for (auto& index : indices) {
 		is >> index;
 	}
+
+	// Deserialize texture coordinates
+	size_t texCoordsSize;
+	is >> texCoordsSize;
+	std::vector<glm::vec2> texCoords(texCoordsSize);
+	for (auto& texCoord : texCoords) {
+		is >> texCoord.x >> texCoord.y;
+	}
+
+	// Load the mesh data
 	mesh->load(vertices.data(), vertices.size(), indices.data(), indices.size());
+	if (!texCoords.empty()) {
+		mesh->loadTexCoords(texCoords.data(), texCoords.size());
+	}
 
 	// Deserialize bounding box
 	glm::vec3 min, max;
