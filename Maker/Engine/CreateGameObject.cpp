@@ -212,12 +212,13 @@ GameObject GameObject::CreateEmptyChild(GameObject& parent)
     return emptyGo;
 }
 
-void GameObject::ReparentGameObject(GameObject& newParent)
+GameObject GameObject::ReparentGameObject(GameObject& newParent, GameObject& child)
 {
-    if (!scene.getChildren().empty()) {
-        this->setParent(newParent);
-    }
     
+    if (!scene.getChildren().empty()) {
+        child.setParent(newParent);
+    }
+	return child;
 }
 
 void GameObject::RemoveAsChild()

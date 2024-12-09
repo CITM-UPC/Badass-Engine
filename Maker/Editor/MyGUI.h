@@ -7,6 +7,8 @@
 #include <vector> // Include the vector header
 #include <imgui.h>
 #include "FileManager.h"
+#include <queue>
+#include <functional>
 
 using namespace std;
 extern GameObject* selectedGameObject; // Define selectedGameObject
@@ -23,18 +25,21 @@ public:
     void renderGameObjectWindow();
     void renderInspectorWindow();
     void renderMainMenuBar();
+    void CheckForDuplicateNames();
+    void CheckForDuplicateNamesRecursive(GameObject& gameObject);
     void render();
     void processEvent(const SDL_Event& event);
     void renderConsoleWindow();
     void renderAssetWindow();
     void renderGameObjectNode(GameObject* gameObject);
-	void renderAssetsWindow();
-
+    std::queue<std::function<void()>> pendingOperations;
     void ManagePosition();
 
     void ManageRotation();
 
     void ManageScale();
+
+    bool isSelectedFromWindow = false; // Add this flag
 
     string memoryUsage;
 private:

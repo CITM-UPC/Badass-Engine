@@ -83,7 +83,7 @@ public:
 	// Functions for the Hierarchy
 	static GameObject CreateEmpty();
 	static GameObject CreateEmptyChild(GameObject& parent);
-	void ReparentGameObject(GameObject& newParent);
+	static GameObject ReparentGameObject(GameObject& newParent, GameObject& child);
 	void RemoveAsChild();
 	void DeleteGameObject();
 

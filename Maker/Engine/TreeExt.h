@@ -38,7 +38,7 @@ public:
 		_parent = &newParent;
 
 		// Add the object to the new parent's children
-		newParent._children.push_back(std::move(*static_cast<T*>(this)));
+		newParent.getChildren().push_back(*static_cast<T*>(this));
 		return _parent;
 	}
 	

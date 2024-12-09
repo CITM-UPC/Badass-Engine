@@ -34,7 +34,11 @@ void GameObject::draw() const
 
 	for (const auto& child : children())
 	{
-		child.draw();
+		if (child.HasComponent<MeshLoader>())
+		{
+			child.draw();
+		}
+		
 	}
 
 	glPopMatrix();

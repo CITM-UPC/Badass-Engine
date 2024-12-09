@@ -12,6 +12,7 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include "Engine/GameObject.h"
 
 inline float sanitizeZero(float value, float epsilon = 1e-6f) {
     return (std::fabs(value) < epsilon) ? 0.0f : value;
@@ -113,14 +114,46 @@ void MyGUI::renderConfigurationWindow() {
     ImGui::End();
 }
 
-void MyGUI::renderGameObjectWindow()
-{
+void MyGUI::renderGameObjectWindow() {
     // Set the size and position of the GameObject window
     ImGui::SetNextWindowSize(ImVec2(300, 700), ImGuiCond_Always);
     ImGui::SetNextWindowPos(ImVec2(0, 20), ImGuiCond_Always);
 
     // Begin the GameObject window with specific flags
     if (ImGui::Begin("Gameobjects", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove)) {
+        // Check if right-clicked on the window
+        if (ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows) && !ImGui::IsAnyItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
+            ImGui::OpenPopup("WindowContextMenu");
+        }
+
+        if (ImGui::BeginPopup("WindowContextMenu")) {
+            if (ImGui::MenuItem("Create Empty")) {
+                pendingOperations.push([]() {
+                    GameObject go = scene.CreateEmpty();
+                    scene.emplaceChild(go);
+                    });
+            }
+            if (ImGui::MenuItem("Create Cube")) {
+                pendingOperations.push([]() {
+                    GameObject go = scene.createCube();
+                    scene.emplaceChild(go);
+                    });
+            }
+            if (ImGui::MenuItem("Create Sphere")) {
+                pendingOperations.push([]() {
+                    GameObject go = scene.createSphere();
+                    scene.emplaceChild(go);
+                    });
+            }
+            if (ImGui::MenuItem("Create Cylinder")) {
+                pendingOperations.push([]() {
+                    GameObject go = scene.createCylinder();
+                    scene.emplaceChild(go);
+                    });
+            }
+            ImGui::EndPopup();
+        }
+
         // Iterate through all GameObjects in the scene and render each one
         for (auto& gameObject : scene.getChildren()) {
             renderGameObjectNode(&gameObject);
@@ -128,10 +161,113 @@ void MyGUI::renderGameObjectWindow()
     }
     // End the GameObject window
     ImGui::End();
+
+    // Execute pending operations
+    while (!pendingOperations.empty()) {
+        pendingOperations.front()();
+        pendingOperations.pop();
+    }
+}
+
+void MyGUI::renderGameObjectNode(GameObject* gameObject)
+{
+    // Set the flags for the tree node
+    ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
+    if (persistentSelectedGameObject == gameObject) {
+        nodeFlags |= ImGuiTreeNodeFlags_Selected;
+    }
+
+    // Check if the GameObject has children
+    if (gameObject->getChildren().empty()) {
+        nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+    }
+
+    // Create a tree node for the GameObject
+    bool nodeOpen = ImGui::TreeNodeEx(gameObject->GetName().c_str(), nodeFlags);
+    if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
+        persistentSelectedGameObject = gameObject;
+        isSelectedFromWindow = true; // Set the flag when selected from the window
+    }
+
+    // Static variables for renaming functionality
+    static char newName[128] = "";
+    static bool renaming = false;
+    static GameObject* renamingObject = nullptr;
+
+    // Handle renaming of the GameObject
+    if (renaming && renamingObject == gameObject) {
+        ImGui::SetKeyboardFocusHere();
+        if (ImGui::InputText("##rename", newName, IM_ARRAYSIZE(newName), ImGuiInputTextFlags_EnterReturnsTrue)) {
+            gameObject->SetName(newName);
+            renaming = false;
+        }
+        if (ImGui::IsItemDeactivated() || ImGui::IsKeyPressed(ImGuiKey_Escape)) {
+            renaming = false;
+        }
+    }
+    else {
+        if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+            renaming = true;
+            renamingObject = gameObject;
+            strcpy_s(newName, gameObject->GetName().c_str());
+        }
+    }
+
+    // Check if right-clicked on the GameObject
+    if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
+        ImGui::OpenPopup(("GameObjectContextMenu" + std::to_string(reinterpret_cast<uintptr_t>(gameObject))).c_str());
+    }
+
+    if (ImGui::BeginPopup(("GameObjectContextMenu" + std::to_string(reinterpret_cast<uintptr_t>(gameObject))).c_str())) {
+        if (ImGui::MenuItem("Delete")) {
+            Log::getInstance().logMessage("Deleted GameObject: " + gameObject->GetName() + "(Just kidding, the function isn't implemented yet)");
+            // Add functionality here
+        }
+        if (ImGui::MenuItem("Rename")) {
+            renaming = true;
+            renamingObject = gameObject;
+            strcpy_s(newName, gameObject->GetName().c_str());
+        }
+        if (ImGui::MenuItem("Create Empty Child")) {
+            pendingOperations.push([gameObject]() {
+                GameObject go = scene.CreateEmptyChild(*gameObject);;
+                });
+        }
+        ImGui::EndPopup();
+    }
+    // Handle drag source
+    if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
+        ImGui::SetDragDropPayload("DND_GAMEOBJECT", &gameObject, sizeof(GameObject*));
+        ImGui::Text("Reparent %s", gameObject->GetName().c_str());
+        ImGui::EndDragDropSource();
+    }
+
+    // Handle drag target
+    if (ImGui::BeginDragDropTarget()) {
+        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_GAMEOBJECT")) {
+            GameObject* droppedGameObject = *(GameObject**)payload->Data;
+            if (droppedGameObject != gameObject) {
+				pendingOperations.push([gameObject, droppedGameObject]() {
+                    GameObject go = *droppedGameObject;
+					go.setParent(*gameObject);
+					selectedGameObject = gameObject;
+					persistentSelectedGameObject = gameObject;
+					});
+            }
+        }
+        ImGui::EndDragDropTarget();
+    }
+    // Recursively render children if the node is open
+    if (nodeOpen && !gameObject->getChildren().empty()) {
+        for (auto& child : gameObject->getChildren()) {
+            renderGameObjectNode(&child);
+        }
+        ImGui::TreePop();
+    }
 }
 
 
-void renderAssetNode(const std::filesystem::path& path, std::filesystem::path& selectedPath) {
+ void renderAssetNode(const std::filesystem::path& path, std::filesystem::path& selectedPath) {
     // Configura los flags del nodo del árbol
     ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
     if (std::filesystem::is_directory(path)) {
@@ -157,20 +293,20 @@ void renderAssetNode(const std::filesystem::path& path, std::filesystem::path& s
 }
 
 void MyGUI::renderAssetWindow() {
-    // Configura el tamaño y la posición de la ventana de assets
+    // Set the size and position of the asset window
     ImGui::SetNextWindowSize(ImVec2(480, 200), ImGuiCond_Appearing);
-    ImGui::SetNextWindowPos(ImVec2(300, 450), ImGuiCond_Appearing);
+    ImGui::SetNextWindowPos(ImVec2(300, 400), ImGuiCond_Appearing); // Adjusted Y-coordinate to move the window up
 
-    // Inicia la ventana de assets con flags específicos
-    if (ImGui::Begin("Assets", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove)) {
-        // Ruta del directorio de assets
+    // Begin the asset window with specific flags
+    if (ImGui::Begin("Assets", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize)) {
+        // Asset directory path
         std::filesystem::path assetDirectory = "Assets";
         static std::filesystem::path selectedPath;
 
-        // Renderiza el nodo raíz del árbol de assets
+        // Render the root node of the asset tree
         renderAssetNode(assetDirectory, selectedPath);
 
-        // Detecta si se presiona la tecla "Suprimir" y hay un archivo o directorio seleccionado
+        // Detect if the "Delete" key is pressed and a file or directory is selected
         if (!selectedPath.empty() && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Delete))) {
             try {
                 if (std::filesystem::is_directory(selectedPath)) {
@@ -179,69 +315,18 @@ void MyGUI::renderAssetWindow() {
                 else {
                     std::filesystem::remove(selectedPath);
                 }
-                selectedPath.clear(); // Limpia la selección después de eliminar
+                selectedPath.clear(); // Clear the selection after deletion
             }
             catch (const std::filesystem::filesystem_error& e) {
-                // Maneja el error si ocurre
-                std::cerr << "Error al eliminar el archivo o directorio: " << e.what() << std::endl;
+                // Handle the error if it occurs
+                std::cerr << "Error deleting the file or directory: " << e.what() << std::endl;
             }
         }
     }
-    // Finaliza la ventana de assets
+    // End the asset window
     ImGui::End();
 }
 
-void MyGUI::renderGameObjectNode(GameObject* gameObject)
-{
-    // Set the flags for the tree node
-    ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
-    if (persistentSelectedGameObject == gameObject) {
-        nodeFlags |= ImGuiTreeNodeFlags_Selected;
-    }
-
-    // Check if the GameObject has children
-    if (gameObject->getChildren().empty()) {
-        nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-    }
-
-    // Create a tree node for the GameObject
-    bool nodeOpen = ImGui::TreeNodeEx(gameObject->GetName().c_str(), nodeFlags);
-    if (ImGui::IsItemClicked()) {
-        persistentSelectedGameObject = gameObject;
-    }
-
-    // Static variables for renaming functionality
-    static char newName[128] = "";
-    static bool renaming = false;
-    static GameObject* renamingObject = nullptr;
-
-    // Handle renaming of the GameObject
-    if (renaming && renamingObject == gameObject) {
-        ImGui::SetKeyboardFocusHere();
-        if (ImGui::InputText("##rename", newName, IM_ARRAYSIZE(newName), ImGuiInputTextFlags_EnterReturnsTrue)) {
-            gameObject->SetName(newName);
-            renaming = false;
-        }
-        if (ImGui::IsItemDeactivated() || ImGui::IsKeyPressed(ImGuiKey_Escape)) {
-            renaming = false;
-        }
-    }
-    else {
-        if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
-            renaming = true;
-            renamingObject = gameObject;
-            strcpy_s(newName, gameObject->GetName().c_str());
-        }
-    }
-
-    // Recursively render children if the node is open
-    if (nodeOpen && !gameObject->getChildren().empty()) {
-        for (auto& child : gameObject->getChildren()) {
-            renderGameObjectNode(&child);
-        }
-        ImGui::TreePop();
-    }
-}
 
 
 void MyGUI::ManagePosition()
@@ -387,9 +472,9 @@ void MyGUI::ManageScale()
 void MyGUI::renderInspectorWindow()
 {
     if (selectedGameObject != nullptr) {
-		persistentSelectedGameObject = selectedGameObject;
+        persistentSelectedGameObject = selectedGameObject;
     }
-	
+
     // Set the size and position of the inspector window
     ImGui::SetNextWindowSize(ImVec2(500, 700), ImGuiCond_Always);
     ImGui::SetNextWindowPos(ImVec2(780, 20), ImGuiCond_Always);
@@ -401,11 +486,11 @@ void MyGUI::renderInspectorWindow()
             // Display the name of the selected GameObject
             ImGui::Text("Selected GameObject: %s", persistentSelectedGameObject->GetName().c_str());
             ImGui::Separator();
-         
-			ManagePosition();
-			ManageRotation();
+
+            ManagePosition();
+            ManageRotation();
             ManageScale();
-            
+
             ImGui::Separator();
 
             // Display Texture Info if the GameObject has a MeshLoader component
@@ -431,7 +516,7 @@ void MyGUI::renderInspectorWindow()
                         0
                     );
                     if (filePath) {
-						fileManager.LoadTexture(filePath, *persistentSelectedGameObject);
+                        fileManager.LoadTexture(filePath, *persistentSelectedGameObject);
                         Log::getInstance().logMessage("Loaded Texture from:");
                         Log::getInstance().logMessage(filePath);
                     }
@@ -457,10 +542,21 @@ void MyGUI::renderInspectorWindow()
 
             ImGui::Separator();
 
-			// Display Camera Component if the GameObject has a Camera component
-            if (persistentSelectedGameObject->HasComponent<CameraComponent>())
-            {
-				// Display Camera Info
+            // Display Camera Component if the GameObject has a Camera component
+            if (persistentSelectedGameObject->HasComponent<CameraComponent>()) {
+                // Display Camera Info
+            }
+
+            ImGui::Separator();
+
+            // Display the name of the parent GameObject
+            GameObject* parent = nullptr;
+            parent = &persistentSelectedGameObject->parent();
+            if (parent) {
+                ImGui::Text("Parent GameObject: %s", parent->GetName().c_str());
+            }
+            else {
+                ImGui::Text("Parent GameObject: None");
             }
         }
         else {
@@ -554,6 +650,55 @@ void MyGUI::renderMainMenuBar()
 
 }
 
+void MyGUI::CheckForDuplicateNames()
+{
+    for (auto& child : scene.getChildren()) {
+        CheckForDuplicateNamesRecursive(child);
+    }
+}
+
+void MyGUI::CheckForDuplicateNamesRecursive(GameObject& gameObject)
+{
+    std::unordered_set<std::string> nameSet;
+    int maxSuffix = 0;
+
+    // Collect names of siblings
+    GameObject* parent = nullptr;
+    if (parent = &gameObject.parent()) {
+        for (auto& sibling : parent->getChildren()) {
+            if (&sibling != &gameObject) {
+                nameSet.insert(sibling.GetName());
+            }
+        }
+    }
+    else {
+        for (auto& sibling : scene.getChildren()) {
+            if (&sibling != &gameObject) {
+                nameSet.insert(sibling.GetName());
+            }
+        }
+    }
+
+    std::string originalName = gameObject.GetName();
+    std::string newName = originalName;
+
+    // Check if the name already exists in the set
+    if (nameSet.find(newName) != nameSet.end()) {
+        // Find the highest suffix used
+        int suffix = 1;
+        while (nameSet.find(newName) != nameSet.end()) {
+            newName = originalName + "(" + std::to_string(suffix) + ")";
+            suffix++;
+        }
+        gameObject.SetName(newName);
+    }
+
+    // Recursively check for duplicates in the children
+    for (auto& child : gameObject.getChildren()) {
+        CheckForDuplicateNamesRecursive(child);
+    }
+}
+
 
 void MyGUI::render() {
     ImGui_ImplOpenGL3_NewFrame();
@@ -571,21 +716,7 @@ void MyGUI::render() {
 	//Asset window, Comment the line below if you don't want the Asset window to appear
 	renderAssetWindow();
     
-    // Ensure no two GameObjects have the same name
-    std::unordered_set<std::string> nameSet;
-    for (auto& child : scene.getChildren()) {
-        if (nameSet.find(child.GetName()) != nameSet.end()) {
-            // If a duplicate name is found, append a unique suffix
-            int suffix = 1;
-            std::string newName = child.GetName() + "_" + std::to_string(suffix);
-            while (nameSet.find(newName) != nameSet.end()) {
-                suffix++;
-                newName = child.GetName() + "_" + std::to_string(suffix);
-            }
-            child.SetName(newName);
-        }
-        nameSet.insert(child.GetName());
-    }
+    CheckForDuplicateNames();
     //ImGui::ShowDemoWindow();
 	//render configuration window
 	renderConfigurationWindow();

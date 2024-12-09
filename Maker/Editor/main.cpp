@@ -281,7 +281,7 @@ void updateGameObjectAndChildren(GameObject& gameObject) {
 		}
 	}
 	
-	if (gameObject.HasComponent<MeshLoader>() && testCamera.GetComponent<CameraComponent>()->camera().frustum.ContainsBBox(gameObject.boundingBox()) == 1 || testCamera.GetComponent<CameraComponent>()->camera().frustum.ContainsBBox(gameObject.boundingBox()) == 2) {
+	if (gameObject.HasComponent<MeshLoader>() /*&& testCamera.GetComponent<CameraComponent>()->camera().frustum.ContainsBBox(gameObject.boundingBox()) == 1 || testCamera.GetComponent<CameraComponent>()->camera().frustum.ContainsBBox(gameObject.boundingBox()) == 2*/) {
 		gameObject.draw();
 	}
 	
@@ -720,8 +720,15 @@ int main(int argc, char* argv[]) {
 				break;
 			case SDL_MOUSEBUTTONDOWN:
 				if (event.button.button == SDL_BUTTON_LEFT) {
-					// Convertir las coordenadas del ratón a coordenadas del mundo
-					selectedGameObject = raycastFromMouseToGameObject(event.button.x, event.button.y, projectionMatrix, viewMatrix, WINDOW_SIZE);
+					if (!gui.isSelectedFromWindow)
+					{
+						// Convertir las coordenadas del ratón a coordenadas del mundo
+						selectedGameObject = raycastFromMouseToGameObject(event.button.x, event.button.y, projectionMatrix, viewMatrix, WINDOW_SIZE);
+					}
+					else
+					{
+						gui.isSelectedFromWindow = false;
+					}
 					
 				}
 			case SDL_MOUSEBUTTONUP:
