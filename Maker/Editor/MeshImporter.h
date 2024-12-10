@@ -22,10 +22,11 @@ class MeshImporter
     TextureImporter textureImporter;
 
 public:
+    std::vector<std::shared_ptr<GameObject>> meshGameObjects;
     
     std::vector<std::shared_ptr<Mesh>> ImportMesh(const aiScene& scene);
 	std::vector<std::shared_ptr<Material>> createMaterialsFromFBX(const aiScene& scene, const std::filesystem::path& basePath);
-    GameObject gameObjectFromNode(const aiScene& scene, const aiNode& node, const vector<shared_ptr<Mesh>>& meshes, const vector<shared_ptr<Material>>& materials, GameObject* parent = nullptr);
+    GameObject gameObjectFromNode(const aiScene& scene, const aiNode& node, const vector<shared_ptr<Mesh>>& meshes, const vector<shared_ptr<Material>>& materials);
 
     void SaveMeshToFile(const std::vector<std::shared_ptr<Mesh>>& meshes, const std::string& filePath);
     std::vector<std::shared_ptr<Mesh>> LoadMeshFromFile(const std::string& filePath);

@@ -44,6 +44,13 @@ public:
 	void alignCamera(const vec3& worldUp = vec3(0.0f, 1.0f, 0.0f));
 	void SetRotation(const vec3& eulerAngles);
 	void SetScale(const vec3& scale);
+	void SetLocalMatrix(const mat4& localMatrix) {
+		_mat = localMatrix;
+		_left = vec3(_mat[0]);
+		_up = vec3(_mat[1]);
+		_fwd = vec3(_mat[2]);
+		_pos = vec3(_mat[3]);
+	}
 
 	Transform& operator=(const glm::mat4& mat) {
 		_mat = mat;

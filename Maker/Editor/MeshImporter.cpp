@@ -3,6 +3,33 @@
 using namespace std;
 namespace fs = std::filesystem;
 
+static mat4 aiMat4ToMat4(const aiMatrix4x4& aiMat) {
+	mat4 mat;
+	for (int c = 0; c < 4; ++c) for (int r = 0; r < 4; ++r) mat[c][r] = aiMat[r][c];
+	return mat;
+}
+
+static void decomposeMatrix(const mat4& matrix, vec3& scale, glm::quat& rotation, vec3& translation) {
+	// Extraer la traslación
+	translation = vec3(matrix[3]);
+
+	// Extraer la escala
+	scale = vec3(
+		length(vec3(matrix[0])),
+		length(vec3(matrix[1])),
+		length(vec3(matrix[2]))
+	);
+
+	// Remover la escala de la matriz
+	mat4 rotationMatrix = matrix;
+	rotationMatrix[0] /= scale.x;
+	rotationMatrix[1] /= scale.y;
+	rotationMatrix[2] /= scale.z;
+
+	// Extraer la rotación
+	rotation = glm::quat(vec3(0.0f, 0.0f, 0.0f));
+}
+
 std::vector<std::shared_ptr<Mesh>> MeshImporter::ImportMesh(const aiScene& scene)
 {
 	vector<shared_ptr<Mesh>> meshes;
@@ -76,16 +103,24 @@ std::vector<std::shared_ptr<Material>> MeshImporter::createMaterialsFromFBX(cons
 	return materials;
 }
 
-static mat4 aiMat4ToMat4(const aiMatrix4x4& aiMat) {
-	mat4 mat;
-	for (int c = 0; c < 4; ++c) for (int r = 0; r < 4; ++r) mat[c][r] = aiMat[r][c];
-	return mat;
-}
 
-GameObject MeshImporter::gameObjectFromNode(const aiScene& scene, const aiNode& node, const vector<shared_ptr<Mesh>>& meshes, const vector<shared_ptr<Material>>& materials, GameObject* parent) {
+
+GameObject MeshImporter::gameObjectFromNode(const aiScene& scene, const aiNode& node, const vector<shared_ptr<Mesh>>& meshes, const vector<shared_ptr<Material>>& materials) {
 	GameObject go;
+
+	mat4 localMatrix = aiMat4ToMat4(node.mTransformation);
+
+	// Decompose the transformation matrix
+	vec3 scale, translation;
+	glm::quat rotation;
+	decomposeMatrix(localMatrix, scale, rotation, translation);
+
+	// Apply the transformation matrix directly
+	go.GetComponent<TransformComponent>()->transform().SetPosition(translation);
+	//go.GetComponent<TransformComponent>()->transform().SetLocalMatrix(localMatrix);
+	
+
 	go.name = node.mName.C_Str();
-	go.GetComponent<TransformComponent>()->setTransform(aiMat4ToMat4(node.mTransformation));
 	go.meshPath = "";
 	go.texturePath = "";
 
@@ -102,16 +137,12 @@ GameObject MeshImporter::gameObjectFromNode(const aiScene& scene, const aiNode& 
 		auto texture = make_shared<Texture>();
 		*texture = go.GetComponent<MeshLoader>()->GetMaterial()->texture;
 		go.GetComponent<MeshLoader>()->SetTexture(texture);
-		
+		meshGameObjects.push_back(std::make_shared<GameObject>(go));
 
-	}
-
-	if (parent) {
-		parent->getChildren().push_back(go);
 	}
 
 	for (unsigned int i = 0; i < node.mNumChildren; ++i) {
-		gameObjectFromNode(scene, *node.mChildren[i], meshes, materials, &go);
+		gameObjectFromNode(scene, *node.mChildren[i], meshes, materials);
 	}
 
 	return go;

@@ -12,6 +12,12 @@ GameObject FileManager::LoadFile(const char* path)
 		auto materials = meshImporter.createMaterialsFromFBX(*fbx_scene, path);
 		GameObject go = meshImporter.gameObjectFromNode(*fbx_scene, *fbx_scene->mRootNode, meshes, materials);
 		aiReleaseImport(fbx_scene);
+		for (int i = 0; i < meshImporter.meshGameObjects.size(); i++)
+		{
+			auto gameObject = meshImporter.meshGameObjects[i];
+			scene.emplaceChild(*gameObject);
+			
+		}
 		std::string nameFile = getFileNameWithoutExtension(path);
 		const std::string finalPath = "Library/Meshes/" + nameFile + ".mesh";
 		meshImporter.SaveMeshToFile(meshes, finalPath.c_str());
