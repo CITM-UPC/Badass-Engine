@@ -27,8 +27,16 @@ public:
 	std::string meshPath;
 	std::string texturePath;
 	bool drawTexture = true;
-	
+	std::string tag = "Untagged";
+	bool active = true;
+	bool destroyed = false;
+	std::vector<std::shared_ptr<GameObject>> _children;
 
+	std::unordered_map<std::type_index, std::shared_ptr<Component>> components;
+	const std::vector<std::shared_ptr<GameObject>>& GetChildren() const {
+		return _children;
+	
+	}
 public:
 	GameObject(const std::string& name = "GameObject");
 	/*GameObject(const GameObject& other) = delete;
@@ -99,12 +107,6 @@ public:
 private:
 	
 	
-	std::string tag = "Untagged";
-	bool active = true;
-	bool destroyed = false;
-
-	std::unordered_map<std::type_index, std::shared_ptr<Component>> components;
-
 	mutable std::type_index cachedComponentType;
 	mutable std::shared_ptr<Component> cachedComponent;
 };
