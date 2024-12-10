@@ -23,6 +23,9 @@ class MeshImporter
 
 public:
     std::vector<std::shared_ptr<GameObject>> meshGameObjects;
+	vec3 _translation;
+	vec3 _scale;
+    glm::quat _rotation;
     
     std::vector<std::shared_ptr<Mesh>> ImportMesh(const aiScene& scene);
 	std::vector<std::shared_ptr<Material>> createMaterialsFromFBX(const aiScene& scene, const std::filesystem::path& basePath);

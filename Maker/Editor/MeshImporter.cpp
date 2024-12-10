@@ -103,7 +103,9 @@ std::vector<std::shared_ptr<Material>> MeshImporter::createMaterialsFromFBX(cons
 	return materials;
 }
 
-
+bool containsSubstring(const std::string& str, const std::string& substr) {
+	return str.find(substr) != std::string::npos;
+}
 
 GameObject MeshImporter::gameObjectFromNode(const aiScene& scene, const aiNode& node, const vector<shared_ptr<Mesh>>& meshes, const vector<shared_ptr<Material>>& materials) {
 	GameObject go;
@@ -116,11 +118,21 @@ GameObject MeshImporter::gameObjectFromNode(const aiScene& scene, const aiNode& 
 	decomposeMatrix(localMatrix, scale, rotation, translation);
 
 	// Apply the transformation matrix directly
-	go.GetComponent<TransformComponent>()->transform().SetPosition(translation);
-	//go.GetComponent<TransformComponent>()->transform().SetLocalMatrix(localMatrix);
-	
+	go.GetComponent<TransformComponent>()->transform().SetLocalMatrix(localMatrix);
 
 	go.name = node.mName.C_Str();
+
+	if (containsSubstring(go.name, "$AssimpFbx$_Translation"))
+	{
+		_translation = translation;
+	}
+	else if (!containsSubstring(go.name, "$AssimpFbx$"))
+	{
+		go.GetComponent<TransformComponent>()->transform().SetPosition(_translation);
+		go.GetComponent<TransformComponent>()->transform().SetRotation(vec3(-90, 0, 0));
+		_translation = vec3(0.0f);
+	}
+
 	go.meshPath = "";
 	go.texturePath = "";
 

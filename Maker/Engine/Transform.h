@@ -22,7 +22,16 @@ class Transform {
 	};
 
 public:
-	
+	Transform() = default;
+	Transform(Transform& transform)
+	{
+		_mat = transform._mat;
+		_left = transform._left;
+		_up = transform._up;
+		_fwd = transform._fwd;
+		_pos = transform._pos;
+
+	}
 
 	const auto& mat() const { return _mat; }
 	const auto& left() const { return _left; }

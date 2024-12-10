@@ -31,6 +31,10 @@ public:
 
 public:
 	GameObject(const std::string& name = "GameObject");
+	/*GameObject(const GameObject& other) = delete;
+	GameObject& operator=(const GameObject& other) = delete;
+	GameObject(GameObject&& other) = default;
+	GameObject& operator=(GameObject&& other) = default;*/
 	~GameObject();
 
 	template <typename T, typename... Args>
