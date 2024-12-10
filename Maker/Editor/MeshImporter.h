@@ -5,15 +5,30 @@
 #include <fstream>
 #include <glm/glm.hpp>
 #include "../Engine/Log.h"
+#include <map>
+#include <filesystem>
+#include <assimp/cimport.h>
+#include <assimp/postprocess.h>
+#include <assimp/scene.h>
+#include <assimp/mesh.h>
+#include "TextureImporter.h"
+#include <string>
+#include "../Engine/GameObject.h"
+using namespace std;
+namespace fs = std::filesystem;
 
 class MeshImporter
 {
+    TextureImporter textureImporter;
+
 public:
+    
+    std::vector<std::shared_ptr<Mesh>> ImportMesh(const aiScene& scene);
+	std::vector<std::shared_ptr<Material>> createMaterialsFromFBX(const aiScene& scene, const std::filesystem::path& basePath);
+    GameObject gameObjectFromNode(const aiScene& scene, const aiNode& node, const vector<shared_ptr<Mesh>>& meshes, const vector<shared_ptr<Material>>& materials, GameObject* parent = nullptr);
 
-    std::shared_ptr<Mesh> ImportMesh(const char* pathFile);
-
-    void SaveMeshToFile(const std::shared_ptr<Mesh>& mesh, const std::string& filePath);
-    std::shared_ptr<Mesh> LoadMeshFromFile(const std::string& filePath);
+    void SaveMeshToFile(const std::vector<std::shared_ptr<Mesh>>& meshes, const std::string& filePath);
+    std::vector<std::shared_ptr<Mesh>> LoadMeshFromFile(const std::string& filePath);
 };
 
 std::ostream& operator<<(std::ostream& os, const std::shared_ptr<Mesh>& mesh);

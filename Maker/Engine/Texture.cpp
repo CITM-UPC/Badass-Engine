@@ -1,5 +1,6 @@
-#include "Texture.h"
 #include <GL/glew.h>
+#include "Texture.h"
+
 
 static auto GLWrapMode(Texture::WrapModes mode) {
 	switch (mode) {

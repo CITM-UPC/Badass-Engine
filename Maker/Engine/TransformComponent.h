@@ -10,5 +10,9 @@ public:
 	explicit TransformComponent(std::weak_ptr<GameObject> owner) : Component(owner) {}
 	const auto& transform() const { return _transform; }
 	auto& transform() { return _transform; }
+
+	void setTransform(const glm::mat4& mat) {
+		_transform = mat;
+	}
 };
 

@@ -1,3 +1,5 @@
+#include <GL/glew.h>
+#include <GL/freeglut.h>
 #include <iostream>
 #include <string>
 using namespace std;
@@ -5,8 +7,6 @@ using namespace std;
 #include "Engine/Scene.h"
 #include <glm/glm.hpp>
 #include <glm/vec2.hpp>
-#include <GL/glew.h>
-#include <GL/freeglut.h>
 #include <IL/il.h>
 #include <IL/ilu.h>
 #include <IL/ilut.h>
@@ -625,6 +625,7 @@ int main(int argc, char* argv[]) {
 	MyGUI gui(window.windowPtr(), window.contextPtr());
 	init_opengl();
 
+
 	GameObject testCamera;
 	testCamera.SetName("Test Camera");
 	testCamera.AddComponent<CameraComponent>()->camera().setProjection(45.0, 1.0, 0.1, 100.0);
@@ -643,6 +644,7 @@ int main(int argc, char* argv[]) {
 	auto testMesh = make_shared<Mesh>();
 	auto imageTexture = make_shared<Image>();
 	auto texture = std::make_shared<Texture>();
+	auto material = std::make_shared<Material>();
 	std::string extension;
 
 	scene.name = "Scene";
@@ -656,9 +658,11 @@ int main(int argc, char* argv[]) {
 	imageTexture->LoadTexture("Assets/Baker_house.png");
 	go.texturePath = "Assets/Baker_house.png";
 	texture->setImage(imageTexture);
+	material->SetTexture(*texture);
 	go.GetComponent<MeshLoader>()->GetMesh()->deleteCheckerTexture();
 	go.GetComponent<MeshLoader>()->SetImage(imageTexture);
 	go.GetComponent<MeshLoader>()->SetTexture(texture);
+	go.GetComponent<MeshLoader>()->SetMaterial(material);
 	go.SetName("BakerHouse");
 	go.GetComponent<TransformComponent>()->transform().SetPosition(vec3(2, 0, 0));
 	scene.emplaceChild(go);

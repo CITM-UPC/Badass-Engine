@@ -1,5 +1,5 @@
-#include "GameObject.h"
-#include <GL/glew.h>
+
+#include "GameObject.h"	
 #include <iostream>
 #include <string>
 #include "Log.h"

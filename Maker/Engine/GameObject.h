@@ -1,9 +1,8 @@
 #pragma once
-
+#include <GL/glew.h>
 #include <memory>
 #include <string> 
 #include <glm/glm.hpp>
-#include <GL/glew.h>
 #include "TreeExt.h"
 #include "Transform.h"
 #include "TransformComponent.h"

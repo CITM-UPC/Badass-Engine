@@ -590,7 +590,7 @@ void MyGUI::renderMainMenuBar()
                     std::string fileName = path.stem().string(); // Extract the file name without extension
                     GameObject go;
                     go.SetName(fileName); // Use the extracted file name
-                    fileManager.LoadFile(filePath, go);
+                    go = fileManager.LoadFile(filePath);
                     scene.emplaceChild(go);
 
                     

@@ -1,9 +1,11 @@
+#include <GL/glew.h>
 #include "MeshLoader.h"
 #include "GameObject.h" 
 #include "Transform.h"
 #include "Mesh.h" 
 #include "Texture.h"
-#include <GL/glew.h>
+
+#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "Image.h"
 
@@ -49,14 +51,27 @@ std::shared_ptr<Image> MeshLoader::GetImage() const
     return image;
 }
 
+void MeshLoader::SetMaterial(std::shared_ptr<Material> material)
+{
+	this->material = material;
+}
+
+std::shared_ptr<Material> MeshLoader::GetMaterial() const
+{
+	return material;
+}
+
 void MeshLoader::Render() const
 {
-    if (texture && drawTexture)
+    /*if (material)
     {
-        glEnable(GL_TEXTURE_2D);
-        texture->bind();
-	}
-	else if (!texture || !drawTexture)
+        if (material->texture.id() && drawTexture)
+        {
+            glEnable(GL_TEXTURE_2D);
+            material->texture.bind();
+        }
+    }
+	else if (!material || !drawTexture)
 	{
 		mesh->CheckerTexture();
 	}
@@ -64,8 +79,19 @@ void MeshLoader::Render() const
     if (mesh) mesh->draw();
     if (drawNormals) mesh->drawNormals(0.1f);
 
-    if (texture)
+    if (material && material->texture.id())
     {
         glDisable(GL_TEXTURE_2D);
+    }*/
+    if (material) {
+        glColor4ubv(&material->color.r);
+        if (material->texture.id()) {
+            glEnable(GL_TEXTURE_2D);
+            material->texture.bind();
+        }
     }
+
+    if (mesh) mesh->draw();
+
+    if (material && material->texture.id()) glDisable(GL_TEXTURE_2D);
 }

@@ -1,8 +1,15 @@
 #pragma once
-
+#define GLM_ENABLE_EXPERIMENTAL
+#include <GL/glew.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include <memory>
+#include <string>
 #include <vector>
 #include <fstream>
 #include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include "../Engine/Log.h"
 #include "../Engine/Image.h"
 #include <IL/il.h>
@@ -12,14 +19,9 @@
 class TextureImporter
 {
 public:
-
-    
-
-
-	std::shared_ptr<Image> ImportTexture(const std::string& pathFile);
-
-	void SaveTextureToFile(const std::shared_ptr<Image>& texture, const std::string& filePath);
-	std::shared_ptr<Image> LoadTextureFromFile(const std::string& filePath);
+    std::shared_ptr<Image> ImportTexture(const std::string& pathFile);
+    void SaveTextureToFile(const std::shared_ptr<Image>& texture, const std::string& filePath);
+    std::shared_ptr<Image> LoadTextureFromFile(const std::string& filePath);
 };
 
 GLenum formatFromChannels(unsigned char channels);
@@ -44,6 +46,3 @@ struct ImageDTO {
 
 std::ostream& operator<<(std::ostream& os, const std::shared_ptr<Image>& tex);
 std::istream& operator>>(std::istream& is, std::shared_ptr<Image>& tex);
-
-
-

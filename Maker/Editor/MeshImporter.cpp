@@ -1,93 +1,123 @@
 #include "MeshImporter.h"
 #include <filesystem>
+using namespace std;
+namespace fs = std::filesystem;
 
-std::shared_ptr<Mesh> MeshImporter::ImportMesh(const char* filePath)
+std::vector<std::shared_ptr<Mesh>> MeshImporter::ImportMesh(const aiScene& scene)
 {
-	Log::getInstance().logMessage("Importing Mesh from:");
-	Log::getInstance().logMessage(filePath);
-	auto mesh = std::make_shared<Mesh>();
-	const aiScene* scene = aiImportFile(filePath, aiProcessPreset_TargetRealtime_MaxQuality);
+	vector<shared_ptr<Mesh>> meshes;
+	for (unsigned int i = 0; i < scene.mNumMeshes; ++i) {
+		const aiMesh* fbx_mesh = scene.mMeshes[i];
+		auto mesh_ptr = make_shared<Mesh>();
 
-	if (scene != nullptr && scene->HasMeshes()) {
-		std::vector<glm::vec3> all_vertices;
-		std::vector<unsigned int> all_indices;
-		std::vector<glm::vec2> all_texCoords;
-		std::vector<glm::vec3> all_normals;
-		std::vector<glm::u8vec3> all_colors;
-
-		unsigned int vertex_offset = 0;
-
-		for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
-			aiMesh* mesh = scene->mMeshes[i];
-
-			// Copy vertices
-			//gui->logMessage("Loading mesh vertices");
-			for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
-				all_vertices.push_back(glm::vec3(mesh->mVertices[j].x, mesh->mVertices[j].y, mesh->mVertices[j].z));
-			}
-
-			// Copy indices
-			//gui->logMessage("Loading mesh indices");
-			for (unsigned int j = 0; j < mesh->mNumFaces; j++) {
-				aiFace& face = mesh->mFaces[j];
-				for (unsigned int k = 0; k < face.mNumIndices; k++) {
-					all_indices.push_back(face.mIndices[k] + vertex_offset);
-				}
-			}
-
-			// Copy texture coordinates
-			//gui->logMessage("Loading mesh texture coordinates");
-			if (mesh->HasTextureCoords(0)) {
-				for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
-					all_texCoords.push_back(glm::vec2(mesh->mTextureCoords[0][j].x, -mesh->mTextureCoords[0][j].y));
-				}
-			}
-
-			// Copy normals
-			//gui->logMessage("Loading mesh normals");
-			if (mesh->HasNormals()) {
-				for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
-					all_normals.push_back(glm::vec3(mesh->mNormals[j].x, mesh->mNormals[j].y, mesh->mNormals[j].z));
-				}
-			}
-
-			// Copy colors
-			//gui->logMessage("Loading mesh colors");
-			if (mesh->HasVertexColors(0)) {
-				for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
-					all_colors.push_back(glm::u8vec3(mesh->mColors[0][j].r * 255, mesh->mColors[0][j].g * 255, mesh->mColors[0][j].b * 255));
-				}
-			}
-
-			vertex_offset += mesh->mNumVertices;
+		vector<unsigned int> indices(fbx_mesh->mNumFaces * 3);
+		for (unsigned int j = 0; j < fbx_mesh->mNumFaces; ++j) {
+			indices[j * 3 + 0] = fbx_mesh->mFaces[j].mIndices[0];
+			indices[j * 3 + 1] = fbx_mesh->mFaces[j].mIndices[1];
+			indices[j * 3 + 2] = fbx_mesh->mFaces[j].mIndices[2];
 		}
 
-		// Load the combined mesh data
-		mesh->load(all_vertices.data(), all_vertices.size(), all_indices.data(), all_indices.size());
-
-		if (!all_texCoords.empty()) {
-			mesh->loadTexCoords(all_texCoords.data(), all_texCoords.size());
+		mesh_ptr->load(reinterpret_cast<const glm::vec3*>(fbx_mesh->mVertices), fbx_mesh->mNumVertices, indices.data(), indices.size());
+		if (fbx_mesh->HasTextureCoords(0)) {
+			vector<glm::vec2> texCoords(fbx_mesh->mNumVertices);
+			for (unsigned int j = 0; j < fbx_mesh->mNumVertices; ++j) texCoords[j] = glm::vec2(fbx_mesh->mTextureCoords[0][j].x, fbx_mesh->mTextureCoords[0][j].y);
+			mesh_ptr->loadTexCoords(texCoords.data(), texCoords.size());
 		}
-
-		if (!all_normals.empty()) {
-			mesh->loadNormals(all_normals.data(), all_normals.size());
+		if (fbx_mesh->HasNormals()) mesh_ptr->loadNormals(reinterpret_cast<glm::vec3*>(fbx_mesh->mNormals), fbx_mesh->mNumVertices);
+		if (fbx_mesh->HasVertexColors(0)) {
+			vector<glm::u8vec3> colors(fbx_mesh->mNumVertices);
+			for (unsigned int j = 0; j < fbx_mesh->mNumVertices; ++j) colors[j] = glm::u8vec3(fbx_mesh->mColors[0][j].r * 255, fbx_mesh->mColors[0][j].g * 255, fbx_mesh->mColors[0][j].b * 255);
+			mesh_ptr->loadColors(colors.data(), colors.size());
 		}
-
-		if (!all_colors.empty()) {
-			mesh->loadColors(all_colors.data(), all_colors.size());
-		}
-
-		aiReleaseImport(scene);
+		meshes.push_back(mesh_ptr);
 	}
-	else {
-		// Handle error
-		Log::getInstance().logMessage("Error importing mesh:");
-		Log::getInstance().logMessage(filePath);
-	}
-	return mesh;
+	return meshes;
 }
 
-void MeshImporter::SaveMeshToFile(const std::shared_ptr<Mesh>& mesh, const std::string& filePath)
+std::vector<std::shared_ptr<Material>> MeshImporter::createMaterialsFromFBX(const aiScene& scene, const fs::path& basePath) {
+
+	std::vector<std::shared_ptr<Material>> materials;
+	map<string, std::shared_ptr<Image>> images;
+
+	for (unsigned int i = 0; i < scene.mNumMaterials; ++i) {
+		const auto* fbx_material = scene.mMaterials[i];
+		auto material = make_shared<Material>();
+
+		if (fbx_material->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
+			aiString texturePath;
+			fbx_material->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath);
+			const string textureFileName = fs::path(texturePath.C_Str()).filename().string();
+			const auto image_itr = images.find(textureFileName);
+			if (image_itr != images.end()) material->texture.setImage(image_itr->second);
+			else {
+				auto image = textureImporter.ImportTexture((basePath / textureFileName).string());
+				images.insert({ textureFileName, image });
+				material->texture.setImage(image);
+			}
+
+			auto uWrapMode = aiTextureMapMode_Wrap;
+			auto vWrapMode = aiTextureMapMode_Wrap;
+			fbx_material->Get(AI_MATKEY_MAPPINGMODE_U_DIFFUSE(0), uWrapMode);
+			fbx_material->Get(AI_MATKEY_MAPPINGMODE_V_DIFFUSE(0), vWrapMode);
+			assert(uWrapMode == aiTextureMapMode_Wrap);
+			assert(vWrapMode == aiTextureMapMode_Wrap);
+
+			unsigned int flags = 0;
+			fbx_material->Get(AI_MATKEY_TEXFLAGS_DIFFUSE(0), flags);
+			assert(flags == 0);
+		}
+
+		aiColor4D color;
+		fbx_material->Get(AI_MATKEY_COLOR_DIFFUSE, color);
+		material->color = color4(color.r * 255, color.g * 255, color.b * 255, color.a * 255);
+
+		materials.push_back(material);
+	}
+	return materials;
+}
+
+static mat4 aiMat4ToMat4(const aiMatrix4x4& aiMat) {
+	mat4 mat;
+	for (int c = 0; c < 4; ++c) for (int r = 0; r < 4; ++r) mat[c][r] = aiMat[r][c];
+	return mat;
+}
+
+GameObject MeshImporter::gameObjectFromNode(const aiScene& scene, const aiNode& node, const vector<shared_ptr<Mesh>>& meshes, const vector<shared_ptr<Material>>& materials, GameObject* parent) {
+	GameObject go;
+	go.name = node.mName.C_Str();
+	go.GetComponent<TransformComponent>()->setTransform(aiMat4ToMat4(node.mTransformation));
+	go.meshPath = "";
+	go.texturePath = "";
+
+	for (unsigned int i = 0; i < node.mNumMeshes; ++i) {
+		const auto* fbx_mesh = scene.mMeshes[node.mMeshes[i]];
+		auto mesh = meshes[node.mMeshes[i]];
+		auto material = materials[fbx_mesh->mMaterialIndex];
+		go.AddComponent<MeshLoader>();
+		go.GetComponent<MeshLoader>()->SetMesh(mesh);
+		go.GetComponent<MeshLoader>()->SetMaterial(material);
+		go.GetComponent<MeshLoader>()->SetColor(material->color);
+		go.GetComponent<MeshLoader>()->GetMaterial()->texture = material->texture;
+		go.GetComponent<MeshLoader>()->SetImage(material->texture.image());
+		auto texture = make_shared<Texture>();
+		*texture = go.GetComponent<MeshLoader>()->GetMaterial()->texture;
+		go.GetComponent<MeshLoader>()->SetTexture(texture);
+		
+
+	}
+
+	if (parent) {
+		parent->getChildren().push_back(go);
+	}
+
+	for (unsigned int i = 0; i < node.mNumChildren; ++i) {
+		gameObjectFromNode(scene, *node.mChildren[i], meshes, materials, &go);
+	}
+
+	return go;
+}
+
+void MeshImporter::SaveMeshToFile(const std::vector<std::shared_ptr<Mesh>>& meshes, const std::string& filePath)
 {
 	// Check if the directory exists
 	std::filesystem::path path(filePath);
@@ -95,104 +125,186 @@ void MeshImporter::SaveMeshToFile(const std::shared_ptr<Mesh>& mesh, const std::
 		std::filesystem::create_directories(path.parent_path());
 	}
 
-	std::ofstream outFile(filePath, std::ios::out);
+	std::ofstream outFile(filePath, std::ios::out | std::ios::binary);
 	if (!outFile.is_open()) {
 		throw std::runtime_error("Failed to open file for writing: " + filePath);
 	}
-	outFile << mesh;
+
+	// Serialize the number of meshes
+	size_t meshCount = meshes.size();
+	outFile.write(reinterpret_cast<const char*>(&meshCount), sizeof(meshCount));
+
+	for (const auto& mesh : meshes) {
+		if (!mesh) {
+			continue;
+		}
+
+		// Serialize vertices
+		const auto& vertices = mesh->vertices();
+		size_t verticesSize = vertices.size();
+		outFile.write(reinterpret_cast<const char*>(&verticesSize), sizeof(verticesSize));
+		outFile.write(reinterpret_cast<const char*>(vertices.data()), verticesSize * sizeof(glm::vec3));
+
+		// Serialize indices
+		const auto& indices = mesh->indices();
+		size_t indicesSize = indices.size();
+		outFile.write(reinterpret_cast<const char*>(&indicesSize), sizeof(indicesSize));
+		outFile.write(reinterpret_cast<const char*>(indices.data()), indicesSize * sizeof(unsigned int));
+
+		// Serialize texture coordinates
+		const auto& texCoords = mesh->texCoords();
+		size_t texCoordsSize = texCoords.size();
+		outFile.write(reinterpret_cast<const char*>(&texCoordsSize), sizeof(texCoordsSize));
+		outFile.write(reinterpret_cast<const char*>(texCoords.data()), texCoordsSize * sizeof(glm::vec2));
+
+		// Serialize bounding box
+		const auto& boundingBox = mesh->boundingBox();
+		outFile.write(reinterpret_cast<const char*>(&boundingBox.min), sizeof(boundingBox.min));
+		outFile.write(reinterpret_cast<const char*>(&boundingBox.max), sizeof(boundingBox.max));
+	}
+
 	outFile.close();
 }
 
-std::shared_ptr<Mesh> MeshImporter::LoadMeshFromFile(const std::string& filePath)
+std::vector<std::shared_ptr<Mesh>> MeshImporter::LoadMeshFromFile(const std::string& filePath)
 {
-	std::ifstream inFile(filePath, std::ios::in);
+	std::ifstream inFile(filePath, std::ios::in | std::ios::binary);
 	if (!inFile.is_open()) {
 		throw std::runtime_error("Failed to open file for reading: " + filePath);
 	}
-	std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>();
-	inFile >> mesh;
+
+	std::vector<std::shared_ptr<Mesh>> meshes;
+	size_t meshCount;
+	inFile.read(reinterpret_cast<char*>(&meshCount), sizeof(meshCount));
+
+	for (size_t i = 0; i < meshCount; ++i) {
+		std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>();
+
+		// Deserialize vertices
+		size_t verticesSize;
+		inFile.read(reinterpret_cast<char*>(&verticesSize), sizeof(verticesSize));
+		std::vector<glm::vec3> vertices(verticesSize);
+		inFile.read(reinterpret_cast<char*>(vertices.data()), verticesSize * sizeof(glm::vec3));
+
+		// Deserialize indices
+		size_t indicesSize;
+		inFile.read(reinterpret_cast<char*>(&indicesSize), sizeof(indicesSize));
+		std::vector<unsigned int> indices(indicesSize);
+		inFile.read(reinterpret_cast<char*>(indices.data()), indicesSize * sizeof(unsigned int));
+
+		// Deserialize texture coordinates
+		size_t texCoordsSize;
+		inFile.read(reinterpret_cast<char*>(&texCoordsSize), sizeof(texCoordsSize));
+		std::vector<glm::vec2> texCoords(texCoordsSize);
+		inFile.read(reinterpret_cast<char*>(texCoords.data()), texCoordsSize * sizeof(glm::vec2));
+
+		// Load the mesh data
+		mesh->load(vertices.data(), vertices.size(), indices.data(), indices.size());
+		if (!texCoords.empty()) {
+			mesh->loadTexCoords(texCoords.data(), texCoords.size());
+		}
+
+		// Deserialize bounding box
+		glm::vec3 min, max;
+		inFile.read(reinterpret_cast<char*>(&min), sizeof(min));
+		inFile.read(reinterpret_cast<char*>(&max), sizeof(max));
+		BoundingBox boundingBox{ min, max };
+		// Assuming Mesh has a method to set bounding box
+		// mesh->setBoundingBox(boundingBox);
+
+		meshes.push_back(mesh);
+	}
+
 	inFile.close();
-	return mesh;
+	return meshes;
 }
 
-std::ostream& operator<<(std::ostream& os, const std::shared_ptr<Mesh>& mesh)
+std::ostream& operator<<(std::ostream& os, const std::vector<std::shared_ptr<Mesh>>& meshes)
 {
-	if (!mesh) {
-		return os;
-	}
+	os << meshes.size() << "\n";
+	for (const auto& mesh : meshes) {
+		if (!mesh) {
+			continue;
+		}
 
-	// Serialize vertices
-	const auto& vertices = mesh->vertices();
-	os << vertices.size() << "\n";
-	for (const auto& vertex : vertices) {
-		os << vertex.x << " " << vertex.y << " " << vertex.z << "\n";
-	}
+		// Serialize vertices
+		const auto& vertices = mesh->vertices();
+		os << vertices.size() << "\n";
+		for (const auto& vertex : vertices) {
+			os << vertex.x << " " << vertex.y << " " << vertex.z << "\n";
+		}
 
-	// Serialize indices
-	const auto& indices = mesh->indices();
-	os << indices.size() << "\n";
-	for (const auto& index : indices) {
-		os << index << "\n";
-	}
+		// Serialize indices
+		const auto& indices = mesh->indices();
+		os << indices.size() << "\n";
+		for (const auto& index : indices) {
+			os << index << "\n";
+		}
 
-	// Serialize texture coordinates
-	const auto& texCoords = mesh->texCoords();
-	os << texCoords.size() << "\n";
-	for (const auto& texCoord : texCoords) {
-		os << texCoord.x << " " << texCoord.y << "\n";
-	}
+		// Serialize texture coordinates
+		const auto& texCoords = mesh->texCoords();
+		os << texCoords.size() << "\n";
+		for (const auto& texCoord : texCoords) {
+			os << texCoord.x << " " << texCoord.y << "\n";
+		}
 
-	// Serialize bounding box
-	const auto& boundingBox = mesh->boundingBox();
-	os << boundingBox.min.x << " " << boundingBox.min.y << " " << boundingBox.min.z << "\n";
-	os << boundingBox.max.x << " " << boundingBox.max.y << " " << boundingBox.max.z << "\n";
+		// Serialize bounding box
+		const auto& boundingBox = mesh->boundingBox();
+		os << boundingBox.min.x << " " << boundingBox.min.y << " " << boundingBox.min.z << "\n";
+		os << boundingBox.max.x << " " << boundingBox.max.y << " " << boundingBox.max.z << "\n";
+	}
 
 	return os;
 }
 
-std::istream& operator>>(std::istream& is, std::shared_ptr<Mesh>& mesh)
+std::istream& operator>>(std::istream& is, std::vector<std::shared_ptr<Mesh>>& meshes)
 {
-	if (!mesh) {
-		mesh = std::make_shared<Mesh>();
-	}
+	size_t meshCount;
+	is >> meshCount;
 
-	// Deserialize vertices
-	size_t verticesSize;
-	is >> verticesSize;
-	std::vector<glm::vec3> vertices(verticesSize);
-	for (auto& vertex : vertices) {
-		is >> vertex.x >> vertex.y >> vertex.z;
-	}
+	for (size_t i = 0; i < meshCount; ++i) {
+		std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>();
 
-	// Deserialize indices
-	size_t indicesSize;
-	is >> indicesSize;
-	std::vector<unsigned int> indices(indicesSize);
-	for (auto& index : indices) {
-		is >> index;
-	}
+		// Deserialize vertices
+		size_t verticesSize;
+		is >> verticesSize;
+		std::vector<glm::vec3> vertices(verticesSize);
+		for (auto& vertex : vertices) {
+			is >> vertex.x >> vertex.y >> vertex.z;
+		}
 
-	// Deserialize texture coordinates
-	size_t texCoordsSize;
-	is >> texCoordsSize;
-	std::vector<glm::vec2> texCoords(texCoordsSize);
-	for (auto& texCoord : texCoords) {
-		is >> texCoord.x >> texCoord.y;
-	}
+		// Deserialize indices
+		size_t indicesSize;
+		is >> indicesSize;
+		std::vector<unsigned int> indices(indicesSize);
+		for (auto& index : indices) {
+			is >> index;
+		}
 
-	// Load the mesh data
-	mesh->load(vertices.data(), vertices.size(), indices.data(), indices.size());
-	if (!texCoords.empty()) {
-		mesh->loadTexCoords(texCoords.data(), texCoords.size());
-	}
+		// Deserialize texture coordinates
+		size_t texCoordsSize;
+		is >> texCoordsSize;
+		std::vector<glm::vec2> texCoords(texCoordsSize);
+		for (auto& texCoord : texCoords) {
+			is >> texCoord.x >> texCoord.y;
+		}
 
-	// Deserialize bounding box
-	glm::vec3 min, max;
-	is >> min.x >> min.y >> min.z;
-	is >> max.x >> max.y >> max.z;
-	BoundingBox boundingBox{ min, max };
-	// Assuming Mesh has a method to set bounding box
-	// mesh->setBoundingBox(boundingBox);
+		// Load the mesh data
+		mesh->load(vertices.data(), vertices.size(), indices.data(), indices.size());
+		if (!texCoords.empty()) {
+			mesh->loadTexCoords(texCoords.data(), texCoords.size());
+		}
+
+		// Deserialize bounding box
+		glm::vec3 min, max;
+		is >> min.x >> min.y >> min.z;
+		is >> max.x >> max.y >> max.z;
+		BoundingBox boundingBox{ min, max };
+		// Assuming Mesh has a method to set bounding box
+		// mesh->setBoundingBox(boundingBox);
+
+		meshes.push_back(mesh);
+	}
 
 	return is;
 }

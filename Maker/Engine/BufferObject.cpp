@@ -1,5 +1,6 @@
-#include "BufferObject.h"
 #include <GL/glew.h>
+#include "BufferObject.h"
+
 
 BufferObject::BufferObject(BufferObject&& other) noexcept : _id(other._id), _target(other._target)
 {

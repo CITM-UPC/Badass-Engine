@@ -1,6 +1,7 @@
+#include <GL/glew.h>
 #include "Mesh.h"
 
-#include <GL/glew.h>
+
 using namespace std;
 
 #define CHECKERS_HEIGHT 32

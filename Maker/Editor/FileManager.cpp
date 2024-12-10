@@ -1,25 +1,26 @@
 #include "FileManager.h"
 
-void FileManager::LoadFile(const char* path, GameObject& go)
+GameObject FileManager::LoadFile(const char* path)
 {
 	// Load file
 	std::string extension = getFileExtension(path);
 
-	if (extension == "obj" || extension == "fbx" || extension == "dae") {
+	if (extension == "obj" || extension == "fbx" || extension == "dae" || extension == "FBX") {
 		// Load Mesh
-		auto mesh = std::make_shared<Mesh>();
-		mesh = meshImporter.ImportMesh(path);
+		const aiScene* fbx_scene = aiImportFile(path, aiProcess_Triangulate | aiProcess_SortByPType | aiProcess_JoinIdenticalVertices | aiProcess_GenUVCoords | aiProcess_TransformUVCoords | aiProcess_FlipUVs);
+		auto meshes = meshImporter.ImportMesh(*fbx_scene);
+		auto materials = meshImporter.createMaterialsFromFBX(*fbx_scene, path);
+		GameObject go = meshImporter.gameObjectFromNode(*fbx_scene, *fbx_scene->mRootNode, meshes, materials);
+		aiReleaseImport(fbx_scene);
 		std::string nameFile = getFileNameWithoutExtension(path);
 		const std::string finalPath = "Library/Meshes/" + nameFile + ".mesh";
-		meshImporter.SaveMeshToFile(mesh, finalPath.c_str());
+		meshImporter.SaveMeshToFile(meshes, finalPath.c_str());
 		go.meshPath = path;
-		go.AddComponent<MeshLoader>()->SetMesh(mesh);
-		go.setMesh(mesh);
 
 		// Set ID
 		int newID = scene.children().back().id;
 		go.id = newID + 1;
-
+		return go;
 		
 	}
 	else {
@@ -61,24 +62,25 @@ void FileManager::LoadTexture(const char* path, GameObject& go)
 
 void FileManager::LoadCustomFile(const char* path, GameObject& go)
 {
-	// Load file
-	std::string extension = getFileExtension(path);
+	//// Load file
+	//std::string extension = getFileExtension(path);
 
-	if (extension == "mesh") {
-		// Load Mesh
-		auto mesh = std::make_shared<Mesh>();
-		mesh = meshImporter.LoadMeshFromFile(path);
-		go.meshPath = path;
-		go.AddComponent<MeshLoader>()->SetMesh(mesh);
-		go.setMesh(mesh);
+	//if (extension == "mesh") {
+	//	// Load Mesh
+	//	const aiScene* fbx_scene = aiImportFile(path, aiProcess_Triangulate | aiProcess_SortByPType | aiProcess_JoinIdenticalVertices | aiProcess_GenUVCoords | aiProcess_TransformUVCoords | aiProcess_FlipUVs);
+	//	std::vector<std::shared_ptr<Mesh>> meshes;
+	//	meshes = meshImporter.LoadMeshFromFile(path);
+	//	go = meshImporter.gameObjectFromNode(*fbx_scene, *fbx_scene->mRootNode, meshes, {});
+	//	go.meshPath = path;
+	//	
 
-		// Set ID
-		int newID = scene.children().back().id;
-		go.id = newID + 1;
-	}
-	else {
-		std::cerr << "Unsupported file extension: " << extension << std::endl;
-	}
+	//	// Set ID
+	//	int newID = scene.children().back().id;
+	//	go.id = newID + 1;
+	//}
+	//else {
+	//	std::cerr << "Unsupported file extension: " << extension << std::endl;
+	//}
 }
 
 std::string FileManager::getFileExtension(const std::string& filePath)

@@ -1,6 +1,7 @@
+#include <GL/glew.h>
 #include "Image.h"
 #include <vector>
-#include <GL/glew.h>
+
 
 Image::~Image() {
 	if (_id) glDeleteTextures(1, &_id);

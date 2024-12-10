@@ -17,7 +17,7 @@ class FileManager
 
 public:
 
-	void LoadFile(const char* path, GameObject& go);
+	GameObject LoadFile(const char* path);
 	void ImportTexture(const char* path);
 	void LoadTexture(const char* path, GameObject& go);
 	std::string getFileExtension(const std::string& filePath);

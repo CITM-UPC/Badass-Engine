@@ -14,16 +14,16 @@ enum PlaneSide
 
 enum FrustumContainment
 {
-    OUT = 0,
-    IN = 1,
+    FRUSTUM_OUT = 0,
+    FRUSTUM_IN = 1,
     INTERSECT = 2
 };
 
 struct Plane
 {
     //plane eq -> ax + by + cz + d = 0
-    glm::vec3 normal;
-    float distance;
+    glm::vec3 normal{};
+    float distance{};
 
     static Plane CreatePlaneFromVec4(glm::vec4 vec)
     {
@@ -63,17 +63,16 @@ struct Plane
 struct Frustum : public Plane
 {
     // hekbas - don't use near and far as those are already defined in minwindef.h
-    Plane _near;
-    Plane _far;
-    Plane left;
-    Plane right;
-    Plane top;
-    Plane bot;
+    Plane _near{};
+    Plane _far{};
+    Plane left{};
+    Plane right{};
+    Plane top{};
+    Plane bot{};
 
-	Plane* m_plane[6] = { &left, &right, &top, &bot, &_near, &_far };
-    
+    Plane* m_plane[6] = { &left, &right, &top, &bot, &_near, &_far };
 
-    glm::vec3 vertices[8];
+    glm::vec3 vertices[8]{};
 
     void Update(const glm::mat4& vpm)
     {
@@ -123,7 +122,6 @@ struct Frustum : public Plane
     // tests if a AaBox is within the frustrum
     int ContainsBBox(BoundingBox refBox) const
     {
-        vec3 vCorner[8]; 
         int iTotalIn = 0;
         // get the corners of the box into the vCorner array
 
@@ -147,8 +145,8 @@ struct Frustum : public Plane
             }
 
             // were all the points outside of plane p?
-            if(iInCount == 0)
-                return(OUT);
+            if (iInCount == 0)
+                return(FRUSTUM_OUT);
 
             // check if they were all on the right side of the plane
             iTotalIn += iPtIn;
@@ -156,48 +154,43 @@ struct Frustum : public Plane
 
         // so if iTotalIn is 6, then all are inside the view
         if (iTotalIn == 6)
-            return(IN);
+            return(FRUSTUM_IN);
 
         // we must be partly in then otherwise
         return(INTERSECT);
- 
-}
-
-
+    }
 };
 
 class Camera {
 
 public:
-	double fov = glm::radians(60.0);
-	double aspect = 16.0 / 9.0;
-	double zNear = 0.1;
-	double zFar = 128.0;
+    double fov = glm::radians(60.0);
+    double aspect = 16.0 / 9.0;
+    double zNear = 0.1;
+    double zFar = 128.0;
 
 private:
-	Transform _transform;
+    Transform _transform;
 
 public:
     bool drawFrustum = true;
 
-	const auto& transform() const { return _transform; }
-	auto& transform() { return _transform; }
+    const auto& transform() const { return _transform; }
+    auto& transform() { return _transform; }
     void UpdateCamera(Transform transform);
-	void UpdateMainCamera();
+    void UpdateMainCamera();
 
     Frustum frustum;
-	mat4 projection() const;
-	mat4 view() const;
-	mat4 viewProjection() const;
+    mat4 projection() const;
+    mat4 view() const;
+    mat4 viewProjection() const;
 
-    mat4 viewMatrix;
-    mat4 projectionMatrix;
-    mat4 viewProjectionMatrix;
+    mat4 viewMatrix{};
+    mat4 projectionMatrix{};
+    mat4 viewProjectionMatrix{};
 
-	void UpdateProjection();
-	void UpdateView(Transform transform);
-	void UpdateViewProjection();
-	void setProjection(double fov, double aspect, double zNear, double zFar);
-	
-
+    void UpdateProjection();
+    void UpdateView(Transform transform);
+    void UpdateViewProjection();
+    void setProjection(double fov, double aspect, double zNear, double zFar);
 };
