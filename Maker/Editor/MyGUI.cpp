@@ -301,7 +301,7 @@ void MyGUI::renderAssetWindow() {
     // Begin the asset window with specific flags
     if (ImGui::Begin("Assets", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize)) {
         // Asset directory path
-        std::filesystem::path assetDirectory = "Library";
+        std::filesystem::path assetDirectory = "Assets";
         static std::filesystem::path selectedPath;
 
         // Render the root node of the asset tree
