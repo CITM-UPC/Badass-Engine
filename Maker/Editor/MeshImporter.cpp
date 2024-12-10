@@ -30,6 +30,12 @@ static void decomposeMatrix(const mat4& matrix, vec3& scale, glm::quat& rotation
 	rotation = glm::quat(vec3(0.0f, 0.0f, 0.0f));
 }
 
+std::string removeLastPartOfPath(const std::string& path) {
+	std::filesystem::path fsPath(path);
+	fsPath.remove_filename();
+	return fsPath.string();
+}
+
 std::vector<std::shared_ptr<Mesh>> MeshImporter::ImportMesh(const aiScene& scene)
 {
 	vector<shared_ptr<Mesh>> meshes;
@@ -77,8 +83,10 @@ std::vector<std::shared_ptr<Material>> MeshImporter::createMaterialsFromFBX(cons
 			const auto image_itr = images.find(textureFileName);
 			if (image_itr != images.end()) material->texture.setImage(image_itr->second);
 			else {
-				auto image = textureImporter.ImportTexture((basePath / textureFileName).string());
-				images.insert({ textureFileName, image });
+				std::string imagePath = removeLastPartOfPath(basePath.string()) + textureFileName;
+				auto image = std::make_shared<Image>();
+				image = textureImporter.ImportTexture(imagePath);
+				//images.insert({ textureFileName, image });
 				material->texture.setImage(image);
 			}
 

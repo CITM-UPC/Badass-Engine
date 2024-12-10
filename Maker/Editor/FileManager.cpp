@@ -50,25 +50,28 @@ void FileManager::LoadTexture(const char* path, GameObject& go)
 	std::string extension = getFileExtension(path);
 	auto imageTexture = std::make_shared<Image>();
 	auto texture = std::make_shared<Texture>();
+	auto material = std::make_shared<Material>();
 	if (extension == "tex")
 	{
 		imageTexture = textureImporter.LoadTextureFromFile(path);
 	}
-	else if (extension == "png" || extension == "jpg" || extension == "jpeg" || extension == "bmp")
+	else if (extension == "png" || extension == "jpg" || extension == "jpeg" || extension == "bmp" || extension == "tga")
 	{
 		imageTexture->LoadTexture(path);
 	}
 	
 	go.texturePath = path;
 	texture->setImage(imageTexture);
+	material->SetTexture(*texture);
 	go.GetComponent<MeshLoader>()->GetMesh()->deleteCheckerTexture();
 	go.GetComponent<MeshLoader>()->SetImage(imageTexture);
 	go.GetComponent<MeshLoader>()->SetTexture(texture);
+	go.GetComponent<MeshLoader>()->SetMaterial(material);
 }
 
 void FileManager::LoadCustomFile(const char* path, GameObject& go)
 {
-	//// Load file
+	// Load file
 	//std::string extension = getFileExtension(path);
 
 	//if (extension == "mesh") {
@@ -77,6 +80,12 @@ void FileManager::LoadCustomFile(const char* path, GameObject& go)
 	//	std::vector<std::shared_ptr<Mesh>> meshes;
 	//	meshes = meshImporter.LoadMeshFromFile(path);
 	//	go = meshImporter.gameObjectFromNode(*fbx_scene, *fbx_scene->mRootNode, meshes, {});
+	//	for (int i = 0; i < meshImporter.meshGameObjects.size(); i++)
+	//	{
+	//		auto gameObject = meshImporter.meshGameObjects[i];
+	//		scene.emplaceChild(*gameObject);
+
+	//	}
 	//	go.meshPath = path;
 	//	
 
