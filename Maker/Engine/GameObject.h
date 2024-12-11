@@ -27,6 +27,10 @@ public:
 	std::string meshPath;
 	std::string texturePath;
 	bool drawTexture = true;
+	static int nextID; // Static member to keep track of the next available ID
+
+	
+
 	std::string tag = "Untagged";
 	bool active = true;
 	bool destroyed = false;

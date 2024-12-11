@@ -272,12 +272,12 @@ void configureCamera() {
 void updateGameObjectAndChildren(GameObject& gameObject) {
 	// Draw the current game object
 
-	GameObject testCamera;
+	//GameObject testCamera;
 	// Testing Frustum Culling
 	for (auto& child : scene.children()) {
 		if (child.name == "Test Camera")
 		{
-			testCamera = child;
+			//testCamera = child;
 		}
 	}
 	
@@ -651,7 +651,6 @@ int main(int argc, char* argv[]) {
 
 	mesh->LoadFile("Assets/BakerHouse.fbx");
 	GameObject go;
-	go.id = 1;
 	go.meshPath = "Assets/BakerHouse.fbx";
 	go.AddComponent<MeshLoader>()->SetMesh(mesh);
 	go.setMesh(mesh);
