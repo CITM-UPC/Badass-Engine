@@ -1,5 +1,18 @@
 #include "TextureImporter.h"
 
+std::string TextureImporter::getFileExtension(const std::string& filePath)
+{
+	// Find the last dot in the file path
+	size_t dotPosition = filePath.rfind('.');
+
+	// If no dot is found, return an empty string
+	if (dotPosition == std::string::npos) {
+		return "";
+	}
+
+	// Extract and return the file extension
+	return filePath.substr(dotPosition + 1);
+}
 
 std::shared_ptr<Image> TextureImporter::ImportTexture(const std::string& pathFile)
 {
@@ -7,6 +20,13 @@ std::shared_ptr<Image> TextureImporter::ImportTexture(const std::string& pathFil
 	auto img = ilGenImage();
 	ilBindImage(img);
 	ilLoadImage((const wchar_t*)pathFile.c_str());
+
+	// Check if the image is a TGA file
+	std::string extension = getFileExtension(pathFile);
+	if (extension == "tga") {
+		iluFlipImage(); // Flip the image vertically
+	}
+
 	auto width = ilGetInteger(IL_IMAGE_WIDTH);
 	auto height = ilGetInteger(IL_IMAGE_HEIGHT);
 	auto channels = ilGetInteger(IL_IMAGE_CHANNELS);

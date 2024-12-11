@@ -18,10 +18,12 @@
 
 class TextureImporter
 {
+	
 public:
     std::shared_ptr<Image> ImportTexture(const std::string& pathFile);
     void SaveTextureToFile(const std::shared_ptr<Image>& texture, const std::string& filePath);
     std::shared_ptr<Image> LoadTextureFromFile(const std::string& filePath);
+    std::string getFileExtension(const std::string& filePath);
 };
 
 GLenum formatFromChannels(unsigned char channels);
