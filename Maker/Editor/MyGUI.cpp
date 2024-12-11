@@ -239,7 +239,7 @@ void MyGUI::renderGameObjectNode(GameObject* gameObject)
     // Handle drag source
     if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
         ImGui::SetDragDropPayload("DND_GAMEOBJECT", &gameObject, sizeof(GameObject*));
-        ImGui::Text("Reparent %s", gameObject->GetName().c_str());
+        ImGui::Text("Move/reparent %s", gameObject->GetName().c_str());
         ImGui::EndDragDropSource();
     }
 
@@ -278,6 +278,8 @@ void MyGUI::renderGameObjectNode(GameObject* gameObject)
                             auto it = std::find(siblings.begin(), siblings.end(), *gameObject);
                             if (it != siblings.end()) {
                                 siblings.insert(std::next(it), *droppedGameObjectCopy);
+                                selectedGameObject = gameObject;
+                                persistentSelectedGameObject = gameObject;
                             }
                             });
                     }
@@ -293,6 +295,8 @@ void MyGUI::renderGameObjectNode(GameObject* gameObject)
                             auto it = std::find(siblings.begin(), siblings.end(), *gameObject);
                             if (it != siblings.end()) {
                                 siblings.insert(std::next(it), *droppedGameObjectCopy);
+                                selectedGameObject = gameObject;
+                                persistentSelectedGameObject = gameObject;
                             }
                             });
                     }
