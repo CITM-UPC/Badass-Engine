@@ -169,85 +169,104 @@ GameObject MeshImporter::gameObjectFromNode(const aiScene& scene, const aiNode& 
 }
 
 // SaveMeshToFile function
-void MeshImporter::SaveMeshToFile(const std::vector<std::shared_ptr<Mesh>>& meshes, const std::string& filePath)
+// SaveMeshToFile function
+void MeshImporter::SaveMeshToFile(const std::vector<std::shared_ptr<Mesh>>& meshes, const std::string& filePath, const std::string& fbxPath)
 {
-	// Check if the directory exists
-	std::filesystem::path path(filePath);
-	if (!std::filesystem::exists(path.parent_path())) {
-		std::filesystem::create_directories(path.parent_path());
-	}
-
-	std::ofstream outFile(filePath, std::ios::binary);
-	if (!outFile.is_open()) {
+	std::ofstream os(filePath, std::ios::binary);
+	if (!os.is_open()) {
 		throw std::runtime_error("Failed to open file for writing: " + filePath);
 	}
 
-	// Serialize the FBX path
-	size_t fbxPathSize = filePath.size();
-	outFile.write(reinterpret_cast<const char*>(&fbxPathSize), sizeof(fbxPathSize));
-	outFile.write(filePath.c_str(), fbxPathSize);
-
-	// Serialize the number of meshes
-	size_t meshCount = meshes.size();
-	outFile.write(reinterpret_cast<const char*>(&meshCount), sizeof(meshCount));
+	// Save FBX path
+	size_t fbxPathSize = fbxPath.size();
+	os.write(reinterpret_cast<const char*>(&fbxPathSize), sizeof(fbxPathSize));
+	os.write(fbxPath.c_str(), fbxPathSize);
 
 	for (const auto& mesh : meshes) {
-		bool isNull = (mesh == nullptr);
-		outFile.write(reinterpret_cast<const char*>(&isNull), sizeof(isNull));
-		if (isNull) continue;
+		MeshDTO dto(mesh);
 
-		// Serialize vertices
-		const auto& vertices = mesh->vertices();
-		size_t verticesSize = vertices.size();
-		outFile.write(reinterpret_cast<const char*>(&verticesSize), sizeof(verticesSize));
-		outFile.write(reinterpret_cast<const char*>(vertices.data()), verticesSize * sizeof(glm::vec3));
+		// Save vertices
+		size_t vertexCount = dto.vertices.size();
+		os.write(reinterpret_cast<const char*>(&vertexCount), sizeof(vertexCount));
+		os.write(reinterpret_cast<const char*>(dto.vertices.data()), vertexCount * sizeof(glm::vec3));
 
-		// Serialize indices
-		const auto& indices = mesh->indices();
-		size_t indicesSize = indices.size();
-		outFile.write(reinterpret_cast<const char*>(&indicesSize), sizeof(indicesSize));
-		outFile.write(reinterpret_cast<const char*>(indices.data()), indicesSize * sizeof(unsigned int));
+		// Save indices
+		size_t indexCount = dto.indices.size();
+		os.write(reinterpret_cast<const char*>(&indexCount), sizeof(indexCount));
+		os.write(reinterpret_cast<const char*>(dto.indices.data()), indexCount * sizeof(unsigned int));
 
-		// Serialize texture coordinates
-		const auto& texCoords = mesh->texCoords();
-		size_t texCoordsSize = texCoords.size();
-		outFile.write(reinterpret_cast<const char*>(&texCoordsSize), sizeof(texCoordsSize));
-		outFile.write(reinterpret_cast<const char*>(texCoords.data()), texCoordsSize * sizeof(glm::vec2));
+		// Save texture coordinates
+		size_t texCoordCount = dto.texCoords.size();
+		os.write(reinterpret_cast<const char*>(&texCoordCount), sizeof(texCoordCount));
+		os.write(reinterpret_cast<const char*>(dto.texCoords.data()), texCoordCount * sizeof(glm::vec2));
 
-		// Serialize colors
-		const auto& colors = mesh->colors();
-		size_t colorsSize = colors.size();
-		outFile.write(reinterpret_cast<const char*>(&colorsSize), sizeof(colorsSize));
-		outFile.write(reinterpret_cast<const char*>(colors.data()), colorsSize * sizeof(glm::u8vec3));
+		// Save colors
+		size_t colorCount = dto.colors.size();
+		os.write(reinterpret_cast<const char*>(&colorCount), sizeof(colorCount));
+		os.write(reinterpret_cast<const char*>(dto.colors.data()), colorCount * sizeof(glm::u8vec3));
 
-		// Serialize bounding box
-		const auto& boundingBox = mesh->boundingBox();
-		outFile.write(reinterpret_cast<const char*>(&boundingBox.min), sizeof(boundingBox.min));
-		outFile.write(reinterpret_cast<const char*>(&boundingBox.max), sizeof(boundingBox.max));
+		// Save bounding box
+		os.write(reinterpret_cast<const char*>(&dto.boundingBoxMin), sizeof(glm::vec3));
+		os.write(reinterpret_cast<const char*>(&dto.boundingBoxMax), sizeof(glm::vec3));
 	}
-
-	outFile.close();
 }
 
 // LoadMeshFromFile function
 std::vector<std::shared_ptr<Mesh>> MeshImporter::LoadMeshFromFile(const std::string& filePath, std::string& fbxPath)
 {
-	std::ifstream inFile(filePath, std::ios::binary);
-	if (!inFile.is_open()) {
+	std::ifstream is(filePath, std::ios::binary);
+	if (!is.is_open()) {
 		throw std::runtime_error("Failed to open file for reading: " + filePath);
 	}
 
-	// Deserialize the FBX path
+	// Load FBX path
 	size_t fbxPathSize;
-	inFile.read(reinterpret_cast<char*>(&fbxPathSize), sizeof(fbxPathSize));
+	is.read(reinterpret_cast<char*>(&fbxPathSize), sizeof(fbxPathSize));
 	fbxPath.resize(fbxPathSize);
-	inFile.read(fbxPath.data(), fbxPathSize);
+	is.read(fbxPath.data(), fbxPathSize);
 
-	// Deserialize the meshes using the operator>>
 	std::vector<std::shared_ptr<Mesh>> meshes;
-	inFile >> meshes;
+	while (is.peek() != EOF) {
+		MeshDTO dto;
 
-	inFile.close();
+		// Load vertices
+		size_t vertexCount;
+		is.read(reinterpret_cast<char*>(&vertexCount), sizeof(vertexCount));
+		dto.vertices.resize(vertexCount);
+		is.read(reinterpret_cast<char*>(dto.vertices.data()), vertexCount * sizeof(glm::vec3));
+
+		// Load indices
+		size_t indexCount;
+		is.read(reinterpret_cast<char*>(&indexCount), sizeof(indexCount));
+		dto.indices.resize(indexCount);
+		is.read(reinterpret_cast<char*>(dto.indices.data()), indexCount * sizeof(unsigned int));
+
+		// Load texture coordinates
+		size_t texCoordCount;
+		is.read(reinterpret_cast<char*>(&texCoordCount), sizeof(texCoordCount));
+		dto.texCoords.resize(texCoordCount);
+		is.read(reinterpret_cast<char*>(dto.texCoords.data()), texCoordCount * sizeof(glm::vec2));
+
+		// Load colors
+		size_t colorCount;
+		is.read(reinterpret_cast<char*>(&colorCount), sizeof(colorCount));
+		dto.colors.resize(colorCount);
+		is.read(reinterpret_cast<char*>(dto.colors.data()), colorCount * sizeof(glm::u8vec3));
+
+		// Load bounding box
+		is.read(reinterpret_cast<char*>(&dto.boundingBoxMin), sizeof(glm::vec3));
+		is.read(reinterpret_cast<char*>(&dto.boundingBoxMax), sizeof(glm::vec3));
+
+		auto mesh = std::make_shared<Mesh>();
+		mesh->load(dto.vertices.data(), dto.vertices.size(), dto.indices.data(), dto.indices.size());
+		if (!dto.texCoords.empty()) {
+			mesh->loadTexCoords(dto.texCoords.data(), dto.texCoords.size());
+		}
+		if (!dto.colors.empty()) {
+			mesh->loadColors(dto.colors.data(), dto.colors.size());
+		}
+		meshes.push_back(mesh);
+	}
 	return meshes;
 }
 
