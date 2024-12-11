@@ -61,6 +61,7 @@ void Mesh::loadNormals(const glm::vec3* normals, size_t num_normals)
 
 void Mesh::loadColors(const glm::u8vec3* colors, size_t num_colors)
 {
+	_colors.assign(colors, colors + num_colors);
 	_colors_buffer.loadData(colors, num_colors * sizeof(glm::u8vec3));
 }
 

@@ -17,6 +17,7 @@ class Mesh
 	std::vector<glm::vec3> _vertices;
 	std::vector<unsigned int> _indices;
 	std::vector<glm::vec2> _texCoords;
+	std::vector<glm::u8vec3> _colors;
 
 	BufferObject _vertices_buffer;
 	BufferObject _indices_buffer;
@@ -38,6 +39,7 @@ public:
 	const auto& indices() const { return _indices; }
 	const auto& boundingBox() const { return _boundingBox; }
 	const auto& texCoords() const { return _texCoords; }
+	const auto& colors() const { return _colors; } 
 	
 
 	void load(const glm::vec3* vertices, size_t num_verts, unsigned int* indices, size_t num_indexs);

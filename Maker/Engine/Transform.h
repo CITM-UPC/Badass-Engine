@@ -42,6 +42,17 @@ public:
 
 	const vec3& GetScale() const;
 
+	// Non-constant versions of GetRotation and GetScale
+	vec3& GetRotation() {
+		// Assuming the rotation is stored in _fwd
+		return _fwd;
+	}
+
+	vec3& GetScale() {
+		// Assuming the scale is stored in _up
+		return _up;
+	}
+
 	auto& pos() { return _pos; }
 
 	const auto* data() const { return &_mat[0][0]; }

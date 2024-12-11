@@ -12,7 +12,7 @@
 
 class FileManager
 {
-	MeshImporter meshImporter;
+	//MeshImporter meshImporter;
 	TextureImporter textureImporter;
 
 public:
