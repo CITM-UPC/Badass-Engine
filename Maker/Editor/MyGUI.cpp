@@ -486,6 +486,8 @@ void MyGUI::renderInspectorWindow()
         if (persistentSelectedGameObject) {
             // Display the name of the selected GameObject
             ImGui::Text("Selected GameObject: %s", persistentSelectedGameObject->GetName().c_str());
+            ImGui::Text("ID: %d", persistentSelectedGameObject->id);
+
             ImGui::Separator();
 
             ManagePosition();
@@ -500,6 +502,7 @@ void MyGUI::renderInspectorWindow()
                     ImGui::Text("Texture Info");
                     ImGui::Text("Texture Path: %s", persistentSelectedGameObject->texturePath.c_str());
                     ImGui::Text("Texture size: %d x %d", persistentSelectedGameObject->GetComponent<MeshLoader>()->GetImage()->width(), persistentSelectedGameObject->GetComponent<MeshLoader>()->GetImage()->height());
+
                 }
                 else {
                     ImGui::Text("No Texture loaded.");

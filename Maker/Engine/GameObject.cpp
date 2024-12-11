@@ -6,7 +6,10 @@
 
 using namespace std;
 
-GameObject::GameObject(const std::string& name) : name(name), cachedComponentType(typeid(Component))
+int GameObject::nextID = 1; // Initialize the static member variable
+
+GameObject::GameObject(const std::string& name)
+	: TreeExt<GameObject>(nextID), id(nextID++), name(name), cachedComponentType(typeid(Component))
 {
 	AddComponent<TransformComponent>();
 	if (name == "Main Camera")
