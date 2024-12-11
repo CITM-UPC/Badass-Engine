@@ -230,11 +230,12 @@ void MyGUI::renderGameObjectNode(GameObject* gameObject)
         }
         if (ImGui::MenuItem("Create Empty Child")) {
             pendingOperations.push([gameObject]() {
-                GameObject go = scene.CreateEmptyChild(*gameObject);;
+                GameObject go = scene.CreateEmptyChild(*gameObject);
                 });
         }
         ImGui::EndPopup();
     }
+
     // Handle drag source
     if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
         ImGui::SetDragDropPayload("DND_GAMEOBJECT", &gameObject, sizeof(GameObject*));
@@ -242,21 +243,71 @@ void MyGUI::renderGameObjectNode(GameObject* gameObject)
         ImGui::EndDragDropSource();
     }
 
-    // Handle drag target
+    // Handle drag target for making the GameObject a child
     if (ImGui::BeginDragDropTarget()) {
         if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_GAMEOBJECT")) {
             GameObject* droppedGameObject = *(GameObject**)payload->Data;
             if (droppedGameObject != gameObject) {
-				pendingOperations.push([gameObject, droppedGameObject]() {
-                    GameObject go = *droppedGameObject;
-                    go.setParent(*gameObject);
-					selectedGameObject = gameObject;
-					persistentSelectedGameObject = gameObject;
-					});
+                pendingOperations.push([gameObject, droppedGameObject]() {
+                    droppedGameObject->setParent(*gameObject);
+                    selectedGameObject = gameObject;
+                    persistentSelectedGameObject = gameObject;
+                    });
             }
         }
         ImGui::EndDragDropTarget();
     }
+
+    // Drop target below the node for making the GameObject a sibling
+    ImGui::Separator();
+    if (ImGui::BeginDragDropTarget()) {
+        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_GAMEOBJECT")) {
+            if (payload->DataSize == sizeof(GameObject*)) {
+                GameObject* droppedGameObject = *(GameObject**)payload->Data;
+                if (droppedGameObject && droppedGameObject != gameObject) {
+                    GameObject* parent = &gameObject->parent();
+                    if (parent) {
+                        pendingOperations.push([parent, droppedGameObject, gameObject]() {
+                            // Create a copy of droppedGameObject
+                            auto droppedGameObjectCopy = droppedGameObject->clone();
+                            // Set new parent
+                            droppedGameObjectCopy->setParent(*parent);
+                            // Move droppedGameObjectCopy below gameObject in the list
+                            auto& siblings = parent->getChildren();
+                            siblings.remove(*droppedGameObject);
+                            auto it = std::find(siblings.begin(), siblings.end(), *gameObject);
+                            if (it != siblings.end()) {
+                                siblings.insert(std::next(it), *droppedGameObjectCopy);
+                            }
+                            });
+                    }
+                    else {
+                        pendingOperations.push([droppedGameObject, gameObject]() {
+                            // Create a copy of droppedGameObject
+                            auto droppedGameObjectCopy = droppedGameObject->clone();
+                            // Set new parent to scene
+                            droppedGameObjectCopy->setParent(scene);
+                            // Move droppedGameObjectCopy below gameObject in the list
+                            auto& siblings = scene.getChildren();
+                            siblings.remove(*droppedGameObject);
+                            auto it = std::find(siblings.begin(), siblings.end(), *gameObject);
+                            if (it != siblings.end()) {
+                                siblings.insert(std::next(it), *droppedGameObjectCopy);
+                            }
+                            });
+                    }
+                }
+            }
+        }
+        ImGui::EndDragDropTarget();
+    }
+
+
+
+
+
+
+
     // Recursively render children if the node is open
     if (nodeOpen && !gameObject->getChildren().empty()) {
         for (auto& child : gameObject->getChildren()) {

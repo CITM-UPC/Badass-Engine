@@ -32,8 +32,13 @@ public:
 
 	//template <typename ...Args>
     auto& setParent(T& newParent) {
+
+		if (_parent == &newParent)
+		{
+			return newParent;
+		}
         // Check if the object already has a parent
-        if (_parent) {
+        else if (_parent) {
             // Find the position of the current object in the old parent's children list
             auto it = std::find_if(_parent->_children.begin(), _parent->_children.end(),
                 [this](const T& child) { return child.id == this->id; });

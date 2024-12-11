@@ -22,6 +22,9 @@ public:
 	glm::u8vec3 _color = glm::u8vec3(255, 255, 255);
 	Texture _texture;
 	
+	std::unique_ptr<GameObject> clone() const {
+		return std::make_unique<GameObject>(*this);
+	}
 	int id = 0;
 	std::string name;
 	std::string meshPath;
