@@ -46,6 +46,32 @@ void TextureImporter::SaveTextureToFile(const std::shared_ptr<Image>& texture, c
 	os << texture;
 }
 
+void TextureImporter::saveAsCustomImage(const std::shared_ptr<Image>& image, const std::string& outputPath) {
+	if (!image) {
+		throw std::runtime_error("No image to save.");
+	}
+
+	std::ofstream file(outputPath, std::ios::binary);
+	if (!file.is_open()) {
+		throw std::runtime_error("Failed to open file for saving: " + outputPath);
+	}
+
+	uint32_t width = image->width();
+	uint32_t height = image->height();
+	uint32_t channels = image->channels();
+
+	// Serialize metadata
+	file.write(reinterpret_cast<const char*>(&width), sizeof(width));
+	file.write(reinterpret_cast<const char*>(&height), sizeof(height));
+	file.write(reinterpret_cast<const char*>(&channels), sizeof(channels));
+
+	// Serialize raw image data
+	const auto& rawData = image->rawData();
+	file.write(reinterpret_cast<const char*>(rawData.data()), rawData.size());
+
+	file.close();
+}
+
 std::shared_ptr<Image> TextureImporter::LoadTextureFromFile(const std::string& filePath)
 {
 	std::ifstream is(filePath, std::ios::binary);

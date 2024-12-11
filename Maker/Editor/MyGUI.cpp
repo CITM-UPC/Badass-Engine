@@ -13,6 +13,7 @@
 #include <sstream>
 #include <string>
 #include "Engine/GameObject.h"
+#include "SceneSerializator.h"
 
 inline float sanitizeZero(float value, float epsilon = 1e-6f) {
     return (std::fabs(value) < epsilon) ? 0.0f : value;
@@ -651,8 +652,23 @@ void MyGUI::renderMainMenuBar()
                     go = fileManager.LoadFile(filePath);
                     scene.emplaceChild(go);
 
-                    
+                        
                    
+                }
+            }
+            if (ImGui::MenuItem("SaveScene")) {
+                const char* filterPatterns[] = { "*.scene" };
+                const char* filePath = tinyfd_saveFileDialog("Save Scene", "scene_output.scene", 1, filterPatterns, nullptr);
+                if (filePath) {
+                    SceneManager::saveScene(filePath);
+                }
+            }
+
+            if (ImGui::MenuItem("Load Scene")) {
+                const char* filterPatterns[] = { "*.scene" };
+                const char* filePath = tinyfd_openFileDialog("Load Scene", "", 1, filterPatterns, nullptr, 0);
+                if (filePath) {
+                    SceneManager::loadScene(filePath);
                 }
             }
             if (ImGui::MenuItem("Quit")) {

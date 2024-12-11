@@ -372,3 +372,69 @@ std::istream& operator>>(std::istream& is, std::vector<std::shared_ptr<Mesh>>& m
 	}
 	return is;
 }
+
+void MeshImporter::saveAsCustomFormat(const GameObject& gameObject, const std::string& outputPath) {
+	if (!gameObject.hasMesh()) {
+		throw std::runtime_error("GameObject has no mesh to save.");
+	}
+
+	const auto& mesh = gameObject.mesh();
+
+	std::ofstream file(outputPath, std::ios::binary);
+	if (!file.is_open()) {
+		throw std::runtime_error("Failed to open file for saving: " + outputPath);
+	}
+
+	uint32_t vertexCount = mesh.vertices().size();
+	uint32_t indexCount = mesh.indices().size();
+
+	// Save vertex and index counts
+	file.write(reinterpret_cast<const char*>(&vertexCount), sizeof(vertexCount));
+	file.write(reinterpret_cast<const char*>(&indexCount), sizeof(indexCount));
+
+	// Save vertex data
+	file.write(reinterpret_cast<const char*>(mesh.vertices().data()), vertexCount * sizeof(glm::vec3));
+
+	// Save index data
+	file.write(reinterpret_cast<const char*>(mesh.indices().data()), indexCount * sizeof(unsigned int));
+
+	file.close();
+	
+}
+
+GameObject MeshImporter::loadCustomFormat(const std::string& inputPath) {
+	std::ifstream file(inputPath, std::ios::binary);
+	if (!file.is_open()) {
+		throw std::runtime_error("Failed to open file for loading: " + inputPath);
+	}
+
+	uint32_t vertexCount, indexCount;
+
+	// Read vertex and index counts
+	file.read(reinterpret_cast<char*>(&vertexCount), sizeof(vertexCount));
+	file.read(reinterpret_cast<char*>(&indexCount), sizeof(indexCount));
+
+	if (!file) {
+		throw std::runtime_error("Failed to read metadata from: " + inputPath);
+	}
+
+	std::vector<glm::vec3> vertices(vertexCount);
+	std::vector<unsigned int> indices(indexCount);
+
+	// Read vertex and index data
+	file.read(reinterpret_cast<char*>(vertices.data()), vertexCount * sizeof(glm::vec3));
+	file.read(reinterpret_cast<char*>(indices.data()), indexCount * sizeof(unsigned int));
+
+	if (!file) {
+		throw std::runtime_error("Failed to read model data from: " + inputPath);
+	}
+
+	auto mesh = std::make_shared<Mesh>();
+	mesh->load(vertices.data(), vertices.size(), indices.data(), indices.size());
+
+	GameObject go;
+	go.setMesh(mesh);
+
+	file.close();
+	return go;
+}

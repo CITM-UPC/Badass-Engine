@@ -2,6 +2,7 @@
 
 #include <ostream>
 #include <istream>
+#include <vector>
 #include <IL/il.h>
 #include <IL/ilu.h>
 #include <glm/glm.hpp>
@@ -13,6 +14,8 @@ class Image {
 	unsigned short _height = 0;
 	unsigned char _channels = 0;
 	std::unique_ptr<char[]> _data;
+
+	mutable std::vector<unsigned char> _dataCache;
 
 public:
 	unsigned int id() const { return _id; }
@@ -33,6 +36,8 @@ public:
 	void load(int width, int height, int channels, void* data);
 	// Load Texture
 	void LoadTexture(const std::string& path);
+
+	const std::vector<unsigned char>& rawData() const;
 };
 
 std::ostream& operator<<(std::ostream& os, const Image& img);

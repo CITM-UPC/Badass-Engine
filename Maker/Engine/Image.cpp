@@ -76,3 +76,12 @@ void Image::LoadTexture(const std::string& path)
 	ilDeleteImage(img);
 }
 
+const std::vector<unsigned char>& Image::rawData() const {
+	if (_dataCache.empty()) {
+		_dataCache.resize(_width * _height * _channels);
+		bind();
+		glGetTexImage(GL_TEXTURE_2D, 0, formatFromChannels(_channels), GL_UNSIGNED_BYTE, _dataCache.data());
+	}
+	return _dataCache;
+}
+
