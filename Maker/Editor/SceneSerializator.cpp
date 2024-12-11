@@ -65,7 +65,7 @@ std::shared_ptr<GameObject> deserializeGameObject(const YAML::Node& node) {
     const auto& childrenNode = node["children"];
     for (const auto& childNode : childrenNode) {
         auto child = deserializeGameObject(childNode);
-        gameObject->_children.push_back(child);
+        gameObject->_myChildren.push_back(child);
     }
 
     return gameObject;

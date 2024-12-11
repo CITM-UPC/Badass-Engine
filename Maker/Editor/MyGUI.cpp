@@ -736,9 +736,10 @@ void MyGUI::CheckForDuplicateNamesRecursive(GameObject& gameObject)
         gameObject.SetName(newName);
     }
 
-    // Recursively check for duplicates in the children
-    for (auto& child : gameObject.getChildren()) {
-        CheckForDuplicateNamesRecursive(child);
+    // Recursively check for duplicates in the children in reverse order
+    auto& children = gameObject.getChildren();
+    for (auto it = children.rbegin(); it != children.rend(); ++it) {
+        CheckForDuplicateNamesRecursive(*it);
     }
 }
 

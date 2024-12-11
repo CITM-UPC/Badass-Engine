@@ -34,11 +34,11 @@ public:
 	std::string tag = "Untagged";
 	bool active = true;
 	bool destroyed = false;
-	std::vector<std::shared_ptr<GameObject>> _children;
+	std::vector<std::shared_ptr<GameObject>> _myChildren;
 
 	std::unordered_map<std::type_index, std::shared_ptr<Component>> components;
 	const std::vector<std::shared_ptr<GameObject>>& GetChildren() const {
-		return _children;
+		return _myChildren;
 	
 	}
 public:
