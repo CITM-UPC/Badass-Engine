@@ -34,6 +34,10 @@ public:
     void SaveMeshToFile(const std::vector<std::shared_ptr<Mesh>>& gameObjects, const std::string& filePath);
     std::vector<std::shared_ptr<Mesh>> LoadMeshFromFile(const std::string& filePath, std::string& fbxPath);
 	std::string GetFBXPath(const std::string& filePath);
+    static void saveAsCustomFormat(const GameObject& gameObject, const std::string& outputPath);
+    static GameObject loadCustomFormat(const std::string& path);
+    void SaveMeshToFile(const std::vector<std::shared_ptr<GameObject>>& gameObjects, const std::string& filePath);
+    std::vector<std::shared_ptr<GameObject>> LoadMeshFromFile(const std::string& filePath);
 };
 
 std::ostream& operator<<(std::ostream& os, const std::shared_ptr<Mesh>& mesh);
