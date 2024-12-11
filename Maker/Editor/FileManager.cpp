@@ -21,7 +21,7 @@ GameObject FileManager::LoadFile(const char* path)
 		}
 		std::string nameFile = getFileNameWithoutExtension(path);
 		const std::string finalPath = "Library/Meshes/" + nameFile + ".mesh";
-		meshImporter.SaveMeshToFile(meshImporter.meshGameObjects, finalPath.c_str());
+		meshImporter.SaveMeshToFile(meshes, finalPath.c_str());
 		go.meshPath = path;
 
 		// Set ID
@@ -77,10 +77,12 @@ void FileManager::LoadCustomFile(const char* path, GameObject& go)
 
 	if (extension == "mesh") {
 		// Load Mesh
-		//const aiScene* fbx_scene = aiImportFile(path, aiProcess_Triangulate | aiProcess_SortByPType | aiProcess_JoinIdenticalVertices | aiProcess_GenUVCoords | aiProcess_TransformUVCoords | aiProcess_FlipUVs);
 		MeshImporter meshImporter;
-		auto meshes = meshImporter.LoadMeshFromFile(path);
-		//go = meshImporter.gameObjectFromNode(*fbx_scene, *fbx_scene->mRootNode, meshes, {});
+		std::string fbxPath;
+		auto meshes = meshImporter.LoadMeshFromFile(path, fbxPath);
+		const aiScene* fbx_scene = aiImportFile(fbxPath.c_str(), aiProcess_Triangulate | aiProcess_SortByPType | aiProcess_JoinIdenticalVertices | aiProcess_GenUVCoords | aiProcess_TransformUVCoords | aiProcess_FlipUVs);
+		auto materials = meshImporter.createMaterialsFromFBX(*fbx_scene, fbxPath);
+		go = meshImporter.gameObjectFromNode(*fbx_scene, *fbx_scene->mRootNode, meshes, {});
 		for (int i = 0; i < meshImporter.meshGameObjects.size(); i++)
 		{
 			auto gameObject = meshImporter.meshGameObjects[i];

@@ -169,7 +169,7 @@ GameObject MeshImporter::gameObjectFromNode(const aiScene& scene, const aiNode& 
 }
 
 // SaveMeshToFile function
-void MeshImporter::SaveMeshToFile(const std::vector<std::shared_ptr<GameObject>>& gameObjects, const std::string& filePath)
+void MeshImporter::SaveMeshToFile(const std::vector<std::shared_ptr<Mesh>>& meshes, const std::string& filePath)
 {
 	// Check if the directory exists
 	std::filesystem::path path(filePath);
@@ -177,126 +177,179 @@ void MeshImporter::SaveMeshToFile(const std::vector<std::shared_ptr<GameObject>>
 		std::filesystem::create_directories(path.parent_path());
 	}
 
-	std::ofstream outFile(filePath);
+	std::ofstream outFile(filePath, std::ios::binary);
 	if (!outFile.is_open()) {
 		throw std::runtime_error("Failed to open file for writing: " + filePath);
 	}
 
-	// Serialize the number of game objects
-	outFile << gameObjects.size() << "\n";
+	// Serialize the FBX path
+	size_t fbxPathSize = filePath.size();
+	outFile.write(reinterpret_cast<const char*>(&fbxPathSize), sizeof(fbxPathSize));
+	outFile.write(filePath.c_str(), fbxPathSize);
 
-	for (const auto& gameObject : gameObjects) {
-		if (!gameObject) {
-			continue;
-		}
+	// Serialize the number of meshes
+	size_t meshCount = meshes.size();
+	outFile.write(reinterpret_cast<const char*>(&meshCount), sizeof(meshCount));
 
-		const auto& mesh = gameObject->GetComponent<MeshLoader>()->GetMesh();
-		if (!mesh) {
-			continue;
-		}
+	for (const auto& mesh : meshes) {
+		bool isNull = (mesh == nullptr);
+		outFile.write(reinterpret_cast<const char*>(&isNull), sizeof(isNull));
+		if (isNull) continue;
 
 		// Serialize vertices
 		const auto& vertices = mesh->vertices();
-		outFile << vertices.size() << "\n";
-		for (const auto& vertex : vertices) {
-			outFile << vertex.x << " " << vertex.y << " " << vertex.z << "\n";
-		}
+		size_t verticesSize = vertices.size();
+		outFile.write(reinterpret_cast<const char*>(&verticesSize), sizeof(verticesSize));
+		outFile.write(reinterpret_cast<const char*>(vertices.data()), verticesSize * sizeof(glm::vec3));
 
 		// Serialize indices
 		const auto& indices = mesh->indices();
-		outFile << indices.size() << "\n";
-		for (const auto& index : indices) {
-			outFile << index << "\n";
-		}
+		size_t indicesSize = indices.size();
+		outFile.write(reinterpret_cast<const char*>(&indicesSize), sizeof(indicesSize));
+		outFile.write(reinterpret_cast<const char*>(indices.data()), indicesSize * sizeof(unsigned int));
 
 		// Serialize texture coordinates
 		const auto& texCoords = mesh->texCoords();
-		outFile << texCoords.size() << "\n";
-		for (const auto& texCoord : texCoords) {
-			outFile << texCoord.x << " " << texCoord.y << "\n";
-		}
+		size_t texCoordsSize = texCoords.size();
+		outFile.write(reinterpret_cast<const char*>(&texCoordsSize), sizeof(texCoordsSize));
+		outFile.write(reinterpret_cast<const char*>(texCoords.data()), texCoordsSize * sizeof(glm::vec2));
 
 		// Serialize colors
 		const auto& colors = mesh->colors();
-		outFile << colors.size() << "\n";
-		for (const auto& color : colors) {
-			outFile << color.r << " " << color.g << " " << color.b << " " << "\n";
-		}
+		size_t colorsSize = colors.size();
+		outFile.write(reinterpret_cast<const char*>(&colorsSize), sizeof(colorsSize));
+		outFile.write(reinterpret_cast<const char*>(colors.data()), colorsSize * sizeof(glm::u8vec3));
 
 		// Serialize bounding box
 		const auto& boundingBox = mesh->boundingBox();
-		outFile << boundingBox.min.x << " " << boundingBox.min.y << " " << boundingBox.min.z << "\n";
-		outFile << boundingBox.max.x << " " << boundingBox.max.y << " " << boundingBox.max.z << "\n";
-
-		// Serialize material
-		const auto& material = gameObject->GetComponent<MeshLoader>()->GetMaterial();
-		const auto& texture = material->texture;
-		std::string texturePath = gameObject->texturePath;
-		outFile << texturePath << "\n";
-
-		// Serialize transform
-		const auto& transform = gameObject->GetComponent<TransformComponent>()->transform();
-		outFile << transform.pos().x << " " << transform.pos().y << " " << transform.pos().z << "\n";
-		outFile << transform.GetRotation().x << " " << transform.GetRotation().y << " " << transform.GetRotation().z << " " << "\n";
-		outFile << transform.GetScale().x << " " << transform.GetScale().y << " " << transform.GetScale().z << "\n";
+		outFile.write(reinterpret_cast<const char*>(&boundingBox.min), sizeof(boundingBox.min));
+		outFile.write(reinterpret_cast<const char*>(&boundingBox.max), sizeof(boundingBox.max));
 	}
 
 	outFile.close();
-
-	
-	
 }
 
-
 // LoadMeshFromFile function
-std::vector<std::shared_ptr<GameObject>> MeshImporter::LoadMeshFromFile(const std::string& filePath)
+std::vector<std::shared_ptr<Mesh>> MeshImporter::LoadMeshFromFile(const std::string& filePath, std::string& fbxPath)
 {
-	std::ifstream inFile(filePath);
+	std::ifstream inFile(filePath, std::ios::binary);
 	if (!inFile.is_open()) {
 		throw std::runtime_error("Failed to open file for reading: " + filePath);
 	}
 
-	std::vector<std::shared_ptr<GameObject>> gameObjects;
-	size_t gameObjectCount;
-	inFile >> gameObjectCount;
+	// Deserialize the FBX path
+	size_t fbxPathSize;
+	inFile.read(reinterpret_cast<char*>(&fbxPathSize), sizeof(fbxPathSize));
+	fbxPath.resize(fbxPathSize);
+	inFile.read(fbxPath.data(), fbxPathSize);
 
-	for (size_t i = 0; i < gameObjectCount; ++i) {
-		std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>();
+	// Deserialize the meshes using the operator>>
+	std::vector<std::shared_ptr<Mesh>> meshes;
+	inFile >> meshes;
 
-		
+	inFile.close();
+	return meshes;
+}
+
+// Function to return the FBX path
+std::string MeshImporter::GetFBXPath(const std::string& filePath)
+{
+	std::ifstream inFile(filePath, std::ios::binary);
+	if (!inFile.is_open()) {
+		throw std::runtime_error("Failed to open file for reading: " + filePath);
+	}
+
+	// Deserialize the FBX path
+	size_t fbxPathSize;
+	inFile.read(reinterpret_cast<char*>(&fbxPathSize), sizeof(fbxPathSize));
+	std::string fbxPath(fbxPathSize, '\0');
+	inFile.read(fbxPath.data(), fbxPathSize);
+
+	inFile.close();
+	return fbxPath;
+}
+
+std::ostream& operator<<(std::ostream& os, const std::vector<std::shared_ptr<Mesh>>& meshes)
+{
+
+	size_t meshCount = meshes.size();
+	os.write(reinterpret_cast<const char*>(&meshCount), sizeof(meshCount));
+	for (const auto& mesh : meshes) {
+		bool isNull = (mesh == nullptr);
+		os.write(reinterpret_cast<const char*>(&isNull), sizeof(isNull));
+		if (isNull) continue;
+
+		// Serialize vertices
+		const auto& vertices = mesh->vertices();
+		size_t verticesSize = vertices.size();
+		os.write(reinterpret_cast<const char*>(&verticesSize), sizeof(verticesSize));
+		os.write(reinterpret_cast<const char*>(vertices.data()), verticesSize * sizeof(glm::vec3));
+
+		// Serialize indices
+		const auto& indices = mesh->indices();
+		size_t indicesSize = indices.size();
+		os.write(reinterpret_cast<const char*>(&indicesSize), sizeof(indicesSize));
+		os.write(reinterpret_cast<const char*>(indices.data()), indicesSize * sizeof(unsigned int));
+
+		// Serialize texture coordinates
+		const auto& texCoords = mesh->texCoords();
+		size_t texCoordsSize = texCoords.size();
+		os.write(reinterpret_cast<const char*>(&texCoordsSize), sizeof(texCoordsSize));
+		os.write(reinterpret_cast<const char*>(texCoords.data()), texCoordsSize * sizeof(glm::vec2));
+
+		// Serialize colors
+		const auto& colors = mesh->colors();
+		size_t colorsSize = colors.size();
+		os.write(reinterpret_cast<const char*>(&colorsSize), sizeof(colorsSize));
+		os.write(reinterpret_cast<const char*>(colors.data()), colorsSize * sizeof(glm::u8vec3));
+
+		// Serialize bounding box
+		const auto& boundingBox = mesh->boundingBox();
+		os.write(reinterpret_cast<const char*>(&boundingBox.min), sizeof(boundingBox.min));
+		os.write(reinterpret_cast<const char*>(&boundingBox.max), sizeof(boundingBox.max));
+	}
+	return os;
+}
+
+std::istream& operator>>(std::istream& is, std::vector<std::shared_ptr<Mesh>>& meshes)
+{
+	size_t meshCount;
+	is.read(reinterpret_cast<char*>(&meshCount), sizeof(meshCount));
+	meshes.resize(meshCount);
+
+	for (size_t i = 0; i < meshCount; ++i) {
+		bool isNull;
+		is.read(reinterpret_cast<char*>(&isNull), sizeof(isNull));
+		if (isNull) {
+			meshes[i] = nullptr;
+			continue;
+		}
+
+		auto mesh = std::make_shared<Mesh>();
+
 		// Deserialize vertices
 		size_t verticesSize;
-		inFile >> verticesSize;
+		is.read(reinterpret_cast<char*>(&verticesSize), sizeof(verticesSize));
 		std::vector<glm::vec3> vertices(verticesSize);
-		for (size_t j = 0; j < verticesSize; ++j) {
-			inFile >> vertices[j].x >> vertices[j].y >> vertices[j].z;
-		}
+		is.read(reinterpret_cast<char*>(vertices.data()), verticesSize * sizeof(glm::vec3));
 
 		// Deserialize indices
 		size_t indicesSize;
-		inFile >> indicesSize;
+		is.read(reinterpret_cast<char*>(&indicesSize), sizeof(indicesSize));
 		std::vector<unsigned int> indices(indicesSize);
-		for (size_t j = 0; j < indicesSize; ++j) {
-			inFile >> indices[j];
-		}
+		is.read(reinterpret_cast<char*>(indices.data()), indicesSize * sizeof(unsigned int));
 
 		// Deserialize texture coordinates
 		size_t texCoordsSize;
-		inFile >> texCoordsSize;
+		is.read(reinterpret_cast<char*>(&texCoordsSize), sizeof(texCoordsSize));
 		std::vector<glm::vec2> texCoords(texCoordsSize);
-		for (size_t j = 0; j < texCoordsSize; ++j) {
-			inFile >> texCoords[j].x >> texCoords[j].y;
-		}
+		is.read(reinterpret_cast<char*>(texCoords.data()), texCoordsSize * sizeof(glm::vec2));
 
 		// Deserialize colors
 		size_t colorsSize;
-		inFile >> colorsSize;
+		is.read(reinterpret_cast<char*>(&colorsSize), sizeof(colorsSize));
 		std::vector<glm::u8vec3> colors(colorsSize);
-		for (size_t j = 0; j < colorsSize; ++j) {
-			unsigned int r, g, b;
-			inFile >> r >> g >> b;
-			colors[j] = glm::u8vec3(r, g, b);
-		}
+		is.read(reinterpret_cast<char*>(colors.data()), colorsSize * sizeof(glm::u8vec3));
 
 		// Load the mesh data
 		mesh->load(vertices.data(), vertices.size(), indices.data(), indices.size());
@@ -309,130 +362,13 @@ std::vector<std::shared_ptr<GameObject>> MeshImporter::LoadMeshFromFile(const st
 
 		// Deserialize bounding box
 		glm::vec3 min, max;
-		inFile >> min.x >> min.y >> min.z;
-		inFile >> max.x >> max.y >> max.z;
+		is.read(reinterpret_cast<char*>(&min), sizeof(min));
+		is.read(reinterpret_cast<char*>(&max), sizeof(max));
 		BoundingBox boundingBox{ min, max };
 		// Assuming Mesh has a method to set bounding box
 		// mesh->setBoundingBox(boundingBox);
 
-		// Deserialize material
-		Material material;
-		std::string texturePath;
-		inFile >> texturePath;
-		if (!texturePath.empty()) {
-			Texture texture;
-			texture.setImage(std::make_shared<Image>());
-			texture.image()->LoadTexture(texturePath);
-			material.SetTexture(texture);
-		}
-
-		// Deserialize transform
-		Transform transform;
-		inFile >> transform.pos().x >> transform.pos().y >> transform.pos().z;
-		inFile >> transform.GetRotation().x >> transform.GetRotation().y >> transform.GetRotation().z;
-		inFile >> transform.GetScale().x >> transform.GetScale().y >> transform.GetScale().z;
-
-		// Create a GameObject, set the mesh, material, and transform to it
-		std::shared_ptr<GameObject> gameObject = std::make_shared<GameObject>();
-		gameObject->AddComponent<MeshLoader>();
-		gameObject->GetComponent<MeshLoader>()->SetMesh(mesh);
-		gameObject->GetComponent<MeshLoader>()->SetMaterial(std::make_shared<Material>(material));
-		gameObject->GetComponent<TransformComponent>()->transform().SetLocalMatrix(transform.mat());
-		gameObjects.push_back(gameObject);
+		meshes[i] = mesh;
 	}
-
-	inFile.close();
-	return gameObjects;
-
-	
-}
-
-std::ostream& operator<<(std::ostream& os, const std::vector<std::shared_ptr<Mesh>>& meshes)
-{
-	os << meshes.size() << "\n";
-	for (const auto& mesh : meshes) {
-		if (!mesh) {
-			continue;
-		}
-
-		// Serialize vertices
-		const auto& vertices = mesh->vertices();
-		os << vertices.size() << "\n";
-		for (const auto& vertex : vertices) {
-			os << vertex.x << " " << vertex.y << " " << vertex.z << "\n";
-		}
-
-		// Serialize indices
-		const auto& indices = mesh->indices();
-		os << indices.size() << "\n";
-		for (const auto& index : indices) {
-			os << index << "\n";
-		}
-
-		// Serialize texture coordinates
-		const auto& texCoords = mesh->texCoords();
-		os << texCoords.size() << "\n";
-		for (const auto& texCoord : texCoords) {
-			os << texCoord.x << " " << texCoord.y << "\n";
-		}
-
-		// Serialize bounding box
-		const auto& boundingBox = mesh->boundingBox();
-		os << boundingBox.min.x << " " << boundingBox.min.y << " " << boundingBox.min.z << "\n";
-		os << boundingBox.max.x << " " << boundingBox.max.y << " " << boundingBox.max.z << "\n";
-	}
-
-	return os;
-}
-
-std::istream& operator>>(std::istream& is, std::vector<std::shared_ptr<Mesh>>& meshes)
-{
-	size_t meshCount;
-	is >> meshCount;
-
-	for (size_t i = 0; i < meshCount; ++i) {
-		std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>();
-
-		// Deserialize vertices
-		size_t verticesSize;
-		is >> verticesSize;
-		std::vector<glm::vec3> vertices(verticesSize);
-		for (auto& vertex : vertices) {
-			is >> vertex.x >> vertex.y >> vertex.z;
-		}
-
-		// Deserialize indices
-		size_t indicesSize;
-		is >> indicesSize;
-		std::vector<unsigned int> indices(indicesSize);
-		for (auto& index : indices) {
-			is >> index;
-		}
-
-		// Deserialize texture coordinates
-		size_t texCoordsSize;
-		is >> texCoordsSize;
-		std::vector<glm::vec2> texCoords(texCoordsSize);
-		for (auto& texCoord : texCoords) {
-			is >> texCoord.x >> texCoord.y;
-		}
-
-		// Load the mesh data
-		mesh->load(vertices.data(), vertices.size(), indices.data(), indices.size());
-		if (!texCoords.empty()) {
-			mesh->loadTexCoords(texCoords.data(), texCoords.size());
-		}
-
-		// Deserialize bounding box
-		glm::vec3 min, max;
-		is >> min.x >> min.y >> min.z;
-		is >> max.x >> max.y >> max.z;
-		BoundingBox boundingBox{ min, max };
-		// Assuming Mesh has a method to set bounding box
-		// mesh->setBoundingBox(boundingBox);
-
-		meshes.push_back(mesh);
-	}
-
 	return is;
 }
