@@ -50,7 +50,7 @@ MyGUI::~MyGUI() {
     ImGui::DestroyContext();
 }
 
-static GameObject* persistentSelectedGameObject = nullptr; 
+
 FileManager fileManager;
 GameObject* selectedGameObject = nullptr; // Define selectedGameObject
 

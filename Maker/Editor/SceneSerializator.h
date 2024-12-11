@@ -1,13 +1,30 @@
 #pragma once
-
-#include <yaml-cpp/yaml.h>
-#include "Engine/GameObject.h"
+#include <iostream>
 #include <fstream>
+#include <string>
+#include <vector>
+#include "Engine/GameObject.h"
 
-void serializeGameObject(YAML::Emitter& out, const GameObject& gameObject);
+class SceneManager
+{
+public:
+	static void LoadGameObject(const std::string& filePath);
+	static void LoadCustomModel(const std::string& filePath);
 
-void saveGameObjectToFile(const GameObject& gameObject, const std::string& filePath);
+	static void spawnBakerHouse();
+	static GameObject* getGameObject(int index);
+	//File drop handler
+	static void deleteSelectedObject(); // Nueva función para eliminar el objeto seleccionado
+	static void spawnParentedObjects(); // Nueva función para generar objetos parenteados
 
-std::shared_ptr<GameObject> deserializeGameObject(const YAML::Node& node);
+	static std::string getFileDirectory(const std::string& filePath);
+	static std::string getFileNameWithoutExtension(const std::string& filePath);
 
-void loadGameObjectFromFile(const std::string& filePath, std::shared_ptr<GameObject> gameObject);
+	static void saveScene(const std::string& filePath);
+	static void loadScene(const std::string& filePath);
+
+
+public:
+	static std::vector<GameObject> gameObjectsOnScene;
+	static GameObject* selectedObject;
+};

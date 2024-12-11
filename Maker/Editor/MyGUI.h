@@ -12,6 +12,7 @@
 
 using namespace std;
 extern GameObject* selectedGameObject; // Define selectedGameObject
+GameObject* persistentSelectedGameObject = nullptr;
 
 class MyGUI
 {

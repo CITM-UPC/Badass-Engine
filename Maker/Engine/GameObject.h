@@ -71,6 +71,7 @@ public:
 	}
 
 	int getId() const { return id; }
+	void setId(int id) { this->id = id; }
 	const auto& color() const { return _color; }
 	auto& color() { return _color; }
 	const auto& texture() const { return _texture; }
