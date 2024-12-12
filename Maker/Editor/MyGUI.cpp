@@ -279,8 +279,8 @@ void MyGUI::renderGameObjectNode(GameObject* gameObject)
                             auto it = std::find(siblings.begin(), siblings.end(), *gameObject);
                             if (it != siblings.end()) {
                                 siblings.insert(std::next(it), *droppedGameObjectCopy);
-                                selectedGameObject = gameObject;
-                                persistentSelectedGameObject = gameObject;
+                                selectedGameObject = nullptr;
+                                persistentSelectedGameObject = nullptr;
                             }
                             });
                     }
