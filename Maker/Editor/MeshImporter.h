@@ -36,8 +36,7 @@ public:
 	std::string GetFBXPath(const std::string& filePath);
     static void saveAsCustomFormat(const GameObject& gameObject, const std::string& outputPath);
     static GameObject loadCustomFormat(const std::string& path);
-    /*void SaveMeshToFile(const std::vector<std::shared_ptr<GameObject>>& gameObjects, const std::string& filePath);
-    std::vector<std::shared_ptr<GameObject>> LoadMeshFromFile(const std::string& filePath);*/
+    bool containsSubstring(const std::string& str, const std::string& substr);
 };
 
 
