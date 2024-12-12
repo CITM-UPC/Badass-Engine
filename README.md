@@ -37,3 +37,10 @@ Extra Controls:
 -You can press Alt + Left Click while not selecting anything to make the camera orbitate around the mouse
 
 -Hold Right Click + Q/E to make the camera move upwards or downwards
+
+
+Mouse Picking specification:
+-The mouse picking is limited to the zone out of the inspector with hardcoded boundings, it could not be perfect.
+
+Assets Window specification:
+-To delete a file from the assets window in the editor, press SUPR.
