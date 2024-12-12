@@ -202,25 +202,37 @@ void MeshImporter::SaveMeshToFile(const std::vector<std::shared_ptr<Mesh>>& mesh
 		os.write(reinterpret_cast<const char*>(&vertexCount), sizeof(vertexCount));
 		os.write(reinterpret_cast<const char*>(dto.vertices.data()), vertexCount * sizeof(glm::vec3));
 
+		os.write("Vert", 4);
+
 		// Save indices
 		size_t indexCount = dto.indices.size();
 		os.write(reinterpret_cast<const char*>(&indexCount), sizeof(indexCount));
 		os.write(reinterpret_cast<const char*>(dto.indices.data()), indexCount * sizeof(unsigned int));
+
+		os.write("Indx", 4);
 
 		// Save texture coordinates
 		size_t texCoordCount = dto.texCoords.size();
 		os.write(reinterpret_cast<const char*>(&texCoordCount), sizeof(texCoordCount));
 		os.write(reinterpret_cast<const char*>(dto.texCoords.data()), texCoordCount * sizeof(glm::vec2));
 
+		os.write("TexC", 4);
+
 		// Save colors
 		size_t colorCount = dto.colors.size();
 		os.write(reinterpret_cast<const char*>(&colorCount), sizeof(colorCount));
 		os.write(reinterpret_cast<const char*>(dto.colors.data()), colorCount * sizeof(glm::u8vec3));
 
+		os.write("Colr", 4);
+
 		// Save bounding box
 		os.write(reinterpret_cast<const char*>(&dto.boundingBoxMin), sizeof(glm::vec3));
 		os.write(reinterpret_cast<const char*>(&dto.boundingBoxMax), sizeof(glm::vec3));
+
+		os.write("Mesh", 4);
 	}
+
+	os.close();
 }
 
 // LoadMeshFromFile function
@@ -247,11 +259,17 @@ std::vector<std::shared_ptr<Mesh>> MeshImporter::LoadMeshFromFile(const std::str
 		dto.vertices.resize(vertexCount);
 		is.read(reinterpret_cast<char*>(dto.vertices.data()), vertexCount * sizeof(glm::vec3));
 
+		char vertex[4];
+		is.read(vertex, 4);
+
 		// Load indices
 		size_t indexCount;
 		is.read(reinterpret_cast<char*>(&indexCount), sizeof(indexCount));
 		dto.indices.resize(indexCount);
 		is.read(reinterpret_cast<char*>(dto.indices.data()), indexCount * sizeof(unsigned int));
+
+		char index[4];
+		is.read(index, 4);
 
 		// Load texture coordinates
 		size_t texCoordCount;
@@ -259,11 +277,17 @@ std::vector<std::shared_ptr<Mesh>> MeshImporter::LoadMeshFromFile(const std::str
 		dto.texCoords.resize(texCoordCount);
 		is.read(reinterpret_cast<char*>(dto.texCoords.data()), texCoordCount * sizeof(glm::vec2));
 
+		char texCoord[4];
+		is.read(texCoord, 4);
+
 		// Load colors
 		size_t colorCount;
 		is.read(reinterpret_cast<char*>(&colorCount), sizeof(colorCount));
 		dto.colors.resize(colorCount);
 		is.read(reinterpret_cast<char*>(dto.colors.data()), colorCount * sizeof(glm::u8vec3));
+
+		char color[4];
+		is.read(color, 4);
 
 		// Load bounding box
 		is.read(reinterpret_cast<char*>(&dto.boundingBoxMin), sizeof(glm::vec3));
@@ -278,16 +302,12 @@ std::vector<std::shared_ptr<Mesh>> MeshImporter::LoadMeshFromFile(const std::str
 			mesh->loadColors(dto.colors.data(), dto.colors.size());
 		}
 
-		// Deserialize bounding box
-		glm::vec3 min, max;
-		is.read(reinterpret_cast<char*>(&min), sizeof(min));
-		is.read(reinterpret_cast<char*>(&max), sizeof(max));
-		BoundingBox boundingBox{ min, max };
-		// Assuming Mesh has a method to set bounding box
-		mesh->setBoundingBox(boundingBox);
 
 		meshes.push_back(mesh);
+		char buffer[4];
+		is.read(buffer, 4);
 	}
+	is.close();
 	return meshes;
 }
 
