@@ -357,7 +357,7 @@ void MyGUI::renderAssetWindow() {
     // Begin the asset window with specific flags
     if (ImGui::Begin("Assets", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize)) {
         // Asset directory path
-        std::filesystem::path assetDirectory = "Assets";
+        std::filesystem::path assetDirectory = "Library";
         static std::filesystem::path selectedPath;
 
         // Render the root node of the asset tree
@@ -633,29 +633,7 @@ void MyGUI::renderMainMenuBar()
 {
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("File")) {
-            if (ImGui::MenuItem("Import FBX")) {
-                // Open file dialog to select an FBX file
-                const char* filterPatterns[1] = { "*.fbx" };
-                const char* filePath = tinyfd_openFileDialog(
-                    "Select an FBX file",
-                    "Assets",
-                    1,
-                    filterPatterns,
-                    NULL,
-                    0
-                );
-                if (filePath) {
-                    std::filesystem::path path(filePath);
-                    std::string fileName = path.stem().string(); // Extract the file name without extension
-                    GameObject go;
-                    go.SetName(fileName); // Use the extracted file name
-                    go = fileManager.LoadFile(filePath);
-                    scene.emplaceChild(go);
-
-                        
-                   
-                }
-            }
+            
             if (ImGui::MenuItem("SaveScene")) {
                 const char* filterPatterns[] = { "*.scene" };
                 const char* filePath = tinyfd_saveFileDialog("Save Scene", "scene_output.scene", 1, filterPatterns, nullptr);
@@ -671,10 +649,7 @@ void MyGUI::renderMainMenuBar()
                     SceneManager::loadScene(filePath);
                 }
             }
-            if (ImGui::MenuItem("Quit")) {
-                SDL_Quit();
-                exit(0);
-            }
+            
             if (ImGui::MenuItem("Load Custom"))
             {
                 // Open file dialog to select an FBX file
@@ -699,6 +674,31 @@ void MyGUI::renderMainMenuBar()
 
                 }
             }
+
+            if (ImGui::MenuItem("Import FBX")) {
+                // Open file dialog to select an FBX file
+                const char* filterPatterns[1] = { "*.fbx" };
+                const char* filePath = tinyfd_openFileDialog(
+                    "Select an FBX file",
+                    "Assets",
+                    1,
+                    filterPatterns,
+                    NULL,
+                    0
+                );
+                if (filePath) {
+                    std::filesystem::path path(filePath);
+                    std::string fileName = path.stem().string(); // Extract the file name without extension
+                    GameObject go;
+                    go.SetName(fileName); // Use the extracted file name
+                    go = fileManager.LoadFile(filePath);
+                    scene.emplaceChild(go);
+
+
+
+                }
+            }
+
 			if (ImGui::MenuItem("Import Texture"))
 			{
                 // Open file dialog to select an FBX file
@@ -722,6 +722,10 @@ void MyGUI::renderMainMenuBar()
                 }
 				
 			}
+            if (ImGui::MenuItem("Quit")) {
+                SDL_Quit();
+                exit(0);
+            }
             ImGui::EndMenu(); // Close the "File" menu
 
         }
