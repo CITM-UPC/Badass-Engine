@@ -21,7 +21,7 @@ public:
 
 	static std::string getFileDirectory(const std::string& filePath);
 	static std::string getFileNameWithoutExtension(const std::string& filePath);
-	static void saveGameObject(std::ofstream& outFile, const GameObject& go);
+	static void saveGameObject(std::ofstream& outFile, GameObject& go);
 	static void saveScene(const std::string& filePath);
 	static void loadScene(const std::string& filePath);
 
