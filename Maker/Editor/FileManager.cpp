@@ -17,6 +17,7 @@ GameObject FileManager::LoadFile(const char* path)
 		{
 			auto gameObject = meshImporter.meshGameObjects[i];
 			gameObject->setMesh(meshes[i]);
+			gameObject->meshPath = path;
 			if (meshImporter.containsSubstring(path, "street2.FBX"))
 			{
 				gameObject->GetComponent<TransformComponent>()->transform().SetRotation(vec3(-90, 0, 0));

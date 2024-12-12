@@ -137,6 +137,7 @@ GameObject MeshImporter::gameObjectFromNode(const aiScene& scene, const aiNode& 
 	go.GetComponent<TransformComponent>()->transform().SetLocalMatrix(localMatrix);
 
 	go.name = node.mName.C_Str();
+	
 
 	if (containsSubstring(go.name, "$AssimpFbx$_Translation"))
 	{
@@ -145,6 +146,8 @@ GameObject MeshImporter::gameObjectFromNode(const aiScene& scene, const aiNode& 
 	else if (!containsSubstring(go.name, "$AssimpFbx$"))
 	{
 		go.GetComponent<TransformComponent>()->transform().SetPosition(_translation);
+		go.GetComponent<TransformComponent>()->transform().SetScale(vec3(1, 1, 1));
+		go.GetComponent<TransformComponent>()->transform().SetRotation((vec3(0, 0, 0)));
 		_translation = vec3(0.0f);
 	}
 
