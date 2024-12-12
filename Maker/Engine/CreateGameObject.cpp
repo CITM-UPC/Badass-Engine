@@ -1,6 +1,7 @@
 #include "GameObject.h"
 #include "Mesh.h"
 #include "types.h"
+#include "Component.h" // Include the header file for Component
 #include <iostream>
 #include <cmath>
 
@@ -219,13 +220,22 @@ void GameObject::RemoveAsChild()
 
 void GameObject::DeleteGameObject()
 {
-   // Delete GameObject
-    if (!this) {
-        return;
+	//recursively delete all children and their components
+	for (auto& child : getChildren())
+	{
+		child.setParent();
+	}
+
+
+	//delete all components
+    for (auto& [type, component] : components)
+    {
+        component.reset(); // Calls the destructor of the component
     }
+	components.clear();
 
-    this->destroyed = true;
+    //remove the object from the parent's children list
+    setParent();
 
-    // We have to implement the destruction of the Components
-
+	//delete the object
 }

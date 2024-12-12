@@ -160,6 +160,9 @@ void SceneManager::saveScene(const std::string& filePath) {
 
 void SceneManager::clearScene() {
     gameObjectsOnScene.clear();
+	for (GameObject& go : scene.getChildren()) {
+		go.DeleteGameObject();
+	}
     selectedObject = nullptr;
 }
 

@@ -31,25 +31,31 @@ public:
 	}
 
 	//template <typename ...Args>
-    auto& setParent(T& newParent) {
+    auto& setParent(T& newParent = *static_cast<T*>(nullptr)) {
+        if (_parent == &newParent) {
+            return newParent;
+        }
+        else if (&newParent == nullptr) {
+            // If the new parent is null, simply remove the object from the old parent's children list
+            if (_parent) {
+                auto it = std::find_if(_parent->_children.begin(), _parent->_children.end(),
+                    [this](const T& child) { return child.id == this->id; });
 
-		if (_parent == &newParent)
-		{
-			return newParent;
-		}
-        // Check if the object already has a parent
+                if (it != _parent->_children.end()) {
+                    _parent->_children.erase(it);
+                }
+            }
+            _parent = nullptr;
+            return newParent;
+        }
         else if (_parent) {
             // Find the position of the current object in the old parent's children list
             auto it = std::find_if(_parent->_children.begin(), _parent->_children.end(),
                 [this](const T& child) { return child.id == this->id; });
 
             if (it != _parent->_children.end()) {
-				Log::getInstance().logMessage("Found the current object in the old parent's children list.");
                 // Transfer the current object from the old parent's children list to the new parent's children list
                 newParent._children.splice(newParent._children.end(), _parent->_children, it);
-            }
-            else {
-				Log::getInstance().logMessage("Did not find the current object in the old parent's children list.");
             }
         }
         else {
@@ -57,13 +63,11 @@ public:
             newParent._children.push_back(*static_cast<T*>(this));
         }
 
-        // Find the child in the new parent's children list with the same id and set its _parent;
-		newParent._children.back()._parent = &newParent;
-
+        // Set the new parent
+        _parent = &newParent;
 
         return newParent;
     }
-
 
 
 	
