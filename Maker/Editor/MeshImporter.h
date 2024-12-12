@@ -14,12 +14,14 @@
 #include "TextureImporter.h"
 #include <string>
 #include "../Engine/GameObject.h"
+#include "FileManager.h"
 using namespace std;
 namespace fs = std::filesystem;
 
 class MeshImporter
 {
     TextureImporter textureImporter;
+	
 
 public:
     std::vector<std::shared_ptr<GameObject>> meshGameObjects;

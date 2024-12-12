@@ -1,6 +1,7 @@
 #include "MeshImporter.h"
 #include <filesystem>
 #include "../Engine/BoundingBox.h"
+
 using namespace std;
 namespace fs = std::filesystem;
 
@@ -94,7 +95,8 @@ std::vector<std::shared_ptr<Material>> MeshImporter::createMaterialsFromFBX(cons
 				std::string imagePath = removeLastPartOfPath(basePath.string()) + textureFileName;
 				auto image = std::make_shared<Image>();
 				image = textureImporter.ImportTexture(imagePath);
-				//images.insert({ textureFileName, image });
+				FileManager fileManager;
+				fileManager.ImportTexture(imagePath.c_str());
 				material->texture.setImage(image);
 			}
 
