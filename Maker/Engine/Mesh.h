@@ -40,6 +40,10 @@ public:
 	const auto& boundingBox() const { return _boundingBox; }
 	const auto& texCoords() const { return _texCoords; }
 	const auto& colors() const { return _colors; } 
+
+	void setBoundingBox(const BoundingBox& boundingBox) {
+		_boundingBox = boundingBox;
+	}
 	
 
 	void load(const glm::vec3* vertices, size_t num_verts, unsigned int* indices, size_t num_indexs);

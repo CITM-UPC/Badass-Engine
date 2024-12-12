@@ -40,6 +40,8 @@ public:
     std::vector<std::shared_ptr<GameObject>> LoadMeshFromFile(const std::string& filePath);*/
 };
 
+
+
 std::ostream& operator<<(std::ostream& os, const std::shared_ptr<Mesh>& mesh);
 std::istream& operator>>(std::istream& is, std::vector<std::shared_ptr<Mesh>>& meshes);
 

@@ -272,16 +272,16 @@ void configureCamera() {
 void updateGameObjectAndChildren(GameObject& gameObject) {
 	// Draw the current game object
 
-	//GameObject testCamera;
+	GameObject testCamera;
 	// Testing Frustum Culling
 	for (auto& child : scene.children()) {
 		if (child.name == "Test Camera")
 		{
-			//testCamera = child;
+			testCamera = child;
 		}
 	}
 	
-	if (gameObject.HasComponent<MeshLoader>() /*&& testCamera.GetComponent<CameraComponent>()->camera().frustum.ContainsBBox(gameObject.boundingBox()) == 1 || testCamera.GetComponent<CameraComponent>()->camera().frustum.ContainsBBox(gameObject.boundingBox()) == 2*/) {
+	if (gameObject.HasComponent<MeshLoader>() && testCamera.GetComponent<CameraComponent>()->camera().frustum.ContainsBBox(gameObject.boundingBox()) == 1 || testCamera.GetComponent<CameraComponent>()->camera().frustum.ContainsBBox(gameObject.boundingBox()) == 2) {
 		gameObject.draw();
 	}
 	

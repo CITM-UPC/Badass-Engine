@@ -16,6 +16,7 @@ GameObject FileManager::LoadFile(const char* path)
 		for (int i = 0; i < meshImporter.meshGameObjects.size(); i++)
 		{
 			auto gameObject = meshImporter.meshGameObjects[i];
+			gameObject->setMesh(meshes[i]);
 			scene.emplaceChild(*gameObject);
 			
 		}
@@ -86,6 +87,7 @@ void FileManager::LoadCustomFile(const char* path, GameObject& go)
 		for (int i = 0; i < meshImporter.meshGameObjects.size(); i++)
 		{
 			auto gameObject = meshImporter.meshGameObjects[i];
+			gameObject->setMesh(meshes[i]);
 			scene.emplaceChild(*gameObject);
 
 		}

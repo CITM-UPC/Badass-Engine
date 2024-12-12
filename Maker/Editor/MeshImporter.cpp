@@ -1,7 +1,9 @@
 #include "MeshImporter.h"
 #include <filesystem>
+#include "../Engine/BoundingBox.h"
 using namespace std;
 namespace fs = std::filesystem;
+
 
 static mat4 aiMat4ToMat4(const aiMatrix4x4& aiMat) {
 	mat4 mat;
@@ -50,7 +52,12 @@ std::vector<std::shared_ptr<Mesh>> MeshImporter::ImportMesh(const aiScene& scene
 			indices[j * 3 + 2] = fbx_mesh->mFaces[j].mIndices[2];
 		}
 
-		mesh_ptr->load(reinterpret_cast<const glm::vec3*>(fbx_mesh->mVertices), fbx_mesh->mNumVertices, indices.data(), indices.size());
+		std::vector<glm::vec3> all_vertices;
+		for (unsigned int j = 0; j < fbx_mesh->mNumVertices; j++) {
+			all_vertices.push_back(glm::vec3(fbx_mesh->mVertices[j].x, fbx_mesh->mVertices[j].y, fbx_mesh->mVertices[j].z));
+		}
+
+		mesh_ptr->load(all_vertices.data(), all_vertices.size(), indices.data(), indices.size());
 		if (fbx_mesh->HasTextureCoords(0)) {
 			vector<glm::vec2> texCoords(fbx_mesh->mNumVertices);
 			for (unsigned int j = 0; j < fbx_mesh->mNumVertices; ++j) texCoords[j] = glm::vec2(fbx_mesh->mTextureCoords[0][j].x, fbx_mesh->mTextureCoords[0][j].y);
@@ -62,6 +69,7 @@ std::vector<std::shared_ptr<Mesh>> MeshImporter::ImportMesh(const aiScene& scene
 			for (unsigned int j = 0; j < fbx_mesh->mNumVertices; ++j) colors[j] = glm::u8vec3(fbx_mesh->mColors[0][j].r * 255, fbx_mesh->mColors[0][j].g * 255, fbx_mesh->mColors[0][j].b * 255);
 			mesh_ptr->loadColors(colors.data(), colors.size());
 		}
+		
 		meshes.push_back(mesh_ptr);
 	}
 	return meshes;
@@ -265,6 +273,15 @@ std::vector<std::shared_ptr<Mesh>> MeshImporter::LoadMeshFromFile(const std::str
 		if (!dto.colors.empty()) {
 			mesh->loadColors(dto.colors.data(), dto.colors.size());
 		}
+
+		// Deserialize bounding box
+		glm::vec3 min, max;
+		is.read(reinterpret_cast<char*>(&min), sizeof(min));
+		is.read(reinterpret_cast<char*>(&max), sizeof(max));
+		BoundingBox boundingBox{ min, max };
+		// Assuming Mesh has a method to set bounding box
+		mesh->setBoundingBox(boundingBox);
+
 		meshes.push_back(mesh);
 	}
 	return meshes;
@@ -385,7 +402,7 @@ std::istream& operator>>(std::istream& is, std::vector<std::shared_ptr<Mesh>>& m
 		is.read(reinterpret_cast<char*>(&max), sizeof(max));
 		BoundingBox boundingBox{ min, max };
 		// Assuming Mesh has a method to set bounding box
-		// mesh->setBoundingBox(boundingBox);
+		mesh->setBoundingBox(boundingBox);
 
 		meshes[i] = mesh;
 	}
