@@ -649,21 +649,9 @@ int main(int argc, char* argv[]) {
 
 	scene.name = "Scene";
 
-	mesh->LoadFile("Assets/BakerHouse.fbx");
 	GameObject go;
-	go.meshPath = "Assets/BakerHouse.fbx";
-	go.AddComponent<MeshLoader>()->SetMesh(mesh);
-	go.setMesh(mesh);
-	imageTexture->LoadTexture("Assets/Baker_house.png");
-	go.texturePath = "Assets/Baker_house.png";
-	texture->setImage(imageTexture);
-	material->SetTexture(*texture);
-	go.GetComponent<MeshLoader>()->GetMesh()->deleteCheckerTexture();
-	go.GetComponent<MeshLoader>()->SetImage(imageTexture);
-	go.GetComponent<MeshLoader>()->SetTexture(texture);
-	go.GetComponent<MeshLoader>()->SetMaterial(material);
-	go.SetName("BakerHouse");
-	go.GetComponent<TransformComponent>()->transform().SetPosition(vec3(2, 0, 0));
+	FileManager fileManager;
+	go = fileManager.LoadFile("Library/Assets/street2.FBX");
 	scene.emplaceChild(go);
 
 	SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
