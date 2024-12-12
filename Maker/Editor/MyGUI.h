@@ -39,6 +39,8 @@ public:
 
     void ManageScale();
 
+    void ManageCameraComponent();
+
     bool isSelectedFromWindow = false; // Add this flag
 
     string memoryUsage;

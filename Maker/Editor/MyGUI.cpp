@@ -14,6 +14,9 @@
 #include <string>
 #include "Engine/GameObject.h"
 #include "SceneSerializator.h"
+#include "Engine/Camera.h"
+#include <cmath>
+
 
 inline float sanitizeZero(float value, float epsilon = 1e-6f) {
     return (std::fabs(value) < epsilon) ? 0.0f : value;
@@ -117,11 +120,11 @@ void MyGUI::renderConfigurationWindow() {
 
 void MyGUI::renderGameObjectWindow() {
     // Set the size and position of the GameObject window
-    ImGui::SetNextWindowSize(ImVec2(300, 700), ImGuiCond_Always);
-    ImGui::SetNextWindowPos(ImVec2(0, 20), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(300, 700), ImGuiCond_Appearing);
+    ImGui::SetNextWindowPos(ImVec2(0, 20), ImGuiCond_Appearing);
 
     // Begin the GameObject window with specific flags
-    if (ImGui::Begin("Gameobjects", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove)) {
+    if (ImGui::Begin("Gameobjects", NULL)) {
         // Check if right-clicked on the window
         if (ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows) && !ImGui::IsAnyItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
             ImGui::OpenPopup("WindowContextMenu");
@@ -355,7 +358,7 @@ void MyGUI::renderAssetWindow() {
 
 
     // Begin the asset window with specific flags
-    if (ImGui::Begin("Assets", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize)) {
+    if (ImGui::Begin("Assets", NULL)) {
         // Asset directory path
         std::filesystem::path assetDirectory = "Library";
         static std::filesystem::path selectedPath;
@@ -526,6 +529,58 @@ void MyGUI::ManageScale()
     
 }
 
+
+void MyGUI::ManageCameraComponent() {
+    if (persistentSelectedGameObject) {
+        if (persistentSelectedGameObject->HasComponent<CameraComponent>())
+        {
+            auto cameraComponent = persistentSelectedGameObject->GetComponent<CameraComponent>();
+            if (cameraComponent) {
+                // Display camera component information
+                auto& camera = cameraComponent->camera();
+
+                // Display and edit zNear
+                bool zNearChanged = false;
+                ImGui::Text("zNear:"); ImGui::SameLine();
+                ImGui::SetNextItemWidth(100);
+                float znear = camera.zNear;
+                if (ImGui::InputFloat("##znear", &znear, 0.1f, 1.0f, "%.2f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+                    zNearChanged = true;
+                }
+                if (zNearChanged) {
+                    camera.zNear = znear;
+                }
+
+                // Display and edit zFar
+                bool zFarChanged = false;
+                ImGui::Text("zFar:"); ImGui::SameLine();
+                ImGui::SetNextItemWidth(100);
+                float zfar = camera.zFar;
+                if (ImGui::InputFloat("##zfar", &zfar, 0.1f, 1.0f, "%.2f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+                    zFarChanged = true;
+                }
+                if (zFarChanged) {
+                    camera.zFar = zfar;
+                }
+
+                // Display and edit FOV
+                bool fovChanged = false;
+                ImGui::Text("FOV:"); ImGui::SameLine();
+                ImGui::SetNextItemWidth(100);
+                float fov = glm::degrees(camera.fov);
+                if (ImGui::InputFloat("##fov", &fov, 0.1f, 1.0f, "%.2f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+                    fovChanged = true;
+                }
+                if (fovChanged) {
+                    camera.fov = glm::radians(fov);
+                }
+            }
+        }
+        
+    }
+}
+
+
 void MyGUI::renderInspectorWindow()
 {
     if (selectedGameObject != nullptr) {
@@ -533,11 +588,11 @@ void MyGUI::renderInspectorWindow()
     }
 
     // Set the size and position of the inspector window
-    ImGui::SetNextWindowSize(ImVec2(500, 700), ImGuiCond_Always);
-    ImGui::SetNextWindowPos(ImVec2(780, 20), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(500, 700), ImGuiCond_Appearing);
+    ImGui::SetNextWindowPos(ImVec2(780, 20), ImGuiCond_Appearing);
 
     // Begin the inspector window with specific flags
-    if (ImGui::Begin("Inspector", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove)) {
+    if (ImGui::Begin("Inspector", NULL)) {
         // Check if a GameObject is selected
         if (persistentSelectedGameObject) {
             // Display the name of the selected GameObject
@@ -549,6 +604,7 @@ void MyGUI::renderInspectorWindow()
             ManagePosition();
             ManageRotation();
             ManageScale();
+            ManageCameraComponent();
 
             ImGui::Separator();
 
