@@ -116,15 +116,37 @@ void SceneManager::saveGameObject(std::ofstream& outFile, GameObject& go) {
         // Write binary mesh data
         uint32_t vertexCount = mesh.vertices().size();
         uint32_t indexCount = mesh.indices().size();
+        uint32_t texCoordCount = mesh.texCoords().size();
+        uint32_t colorCount = mesh.colors().size();
 
         outFile.write(reinterpret_cast<const char*>(&vertexCount), sizeof(vertexCount));
         outFile.write(reinterpret_cast<const char*>(&indexCount), sizeof(indexCount));
+        
+
         outFile.write(reinterpret_cast<const char*>(mesh.vertices().data()), vertexCount * sizeof(glm::vec3));
         outFile.write(reinterpret_cast<const char*>(mesh.indices().data()), indexCount * sizeof(unsigned int));
+        
+
     }
     else {
         outFile << "    \"Mesh\": null\n";
     }
+	if (go.HasComponent<CameraComponent>()) {
+		outFile << "    \"Camera\": \"BinaryDataStart\"\n"; // Indicate binary section
+		const auto& camera = go.GetComponent<CameraComponent>()->camera();
+
+		// Write binary camera data
+		uint32_t fov = camera.fov;
+		uint32_t znear = camera.zNear;
+		uint32_t zfar = camera.zFar;
+
+		outFile.write(reinterpret_cast<const char*>(&fov), sizeof(fov));
+		outFile.write(reinterpret_cast<const char*>(&znear), sizeof(znear));
+		outFile.write(reinterpret_cast<const char*>(&zfar), sizeof(zfar));
+	}
+	else {
+		outFile << "    \"Camera\": null\n";
+	}
 
     outFile << "  }";
 }
@@ -160,6 +182,7 @@ void SceneManager::saveScene(const std::string& filePath) {
 
 void SceneManager::clearScene() {
     gameObjectsOnScene.clear();
+	scene.getChildren().clear();
     selectedObject = nullptr;
 }
 
@@ -181,7 +204,7 @@ void SceneManager::loadScene(const std::string& filePath) {
             // Parse Name
             std::getline(inFile, line);
             if (line.find("\"Name\":") != std::string::npos) {
-                std::string name = line.substr(line.find(":") + 2);
+                std::string name = line.substr(line.find(":") + 3);
                 name.erase(name.find_last_of("\""));
                 go.SetName(name);
             }
@@ -218,21 +241,46 @@ void SceneManager::loadScene(const std::string& filePath) {
             if (line.find("\"Mesh\": \"BinaryDataStart\"") != std::string::npos) {
                 auto mesh = std::make_shared<Mesh>();
 
-                uint32_t vertexCount, indexCount;
+                uint32_t vertexCount, indexCount, texCoordCount, colorCount;
                 inFile.read(reinterpret_cast<char*>(&vertexCount), sizeof(vertexCount));
                 inFile.read(reinterpret_cast<char*>(&indexCount), sizeof(indexCount));
+                
 
                 std::vector<glm::vec3> vertices(vertexCount);
                 std::vector<unsigned int> indices(indexCount);
+               
 
                 inFile.read(reinterpret_cast<char*>(vertices.data()), vertexCount * sizeof(glm::vec3));
                 inFile.read(reinterpret_cast<char*>(indices.data()), indexCount * sizeof(unsigned int));
+                
+
 
                 mesh->load(vertices.data(), vertices.size(), indices.data(), indices.size());
+				
+				
+				go.AddComponent<MeshLoader>()->SetMesh(mesh);
                 go.setMesh(mesh);
             }
+            std::getline(inFile, line);
+            if (line.find("\"Camera\": \"BinaryDataStart\"") != std::string::npos)
+            {
+				auto camera = std::make_shared<Camera>();
+				uint32_t fov, znear, zfar;
+				inFile.read(reinterpret_cast<char*>(&fov), sizeof(fov));
+				inFile.read(reinterpret_cast<char*>(&znear), sizeof(znear));
+				inFile.read(reinterpret_cast<char*>(&zfar), sizeof(zfar));
 
-            gameObjectsOnScene.push_back(go);
+				camera->fov = fov;
+				camera->zNear = znear;
+				camera->zFar = zfar;
+
+                go.AddComponent<CameraComponent>()->camera();
+				go.GetComponent<CameraComponent>()->camera().fov = fov;
+				go.GetComponent<CameraComponent>()->camera().zNear = znear;
+				go.GetComponent<CameraComponent>()->camera().zFar = zfar;
+            }
+
+			scene.emplaceChild(go);
         }
     }
 

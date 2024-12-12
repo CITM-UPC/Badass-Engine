@@ -290,6 +290,8 @@ void updateGameObjectAndChildren(GameObject& gameObject) {
 		DrawFrustum(gameObject.GetComponent<CameraComponent>()->camera().frustum);
 	}
 
+	gameObject.drawDebug(gameObject);
+
 	// Recursively draw all children
 	for (auto& child : gameObject.children()) {
 		updateGameObjectAndChildren(child);
@@ -310,7 +312,7 @@ static void display_func() {
 
 	updateScene();
 
-	scene.drawDebug(scene);
+	//scene.drawDebug(scene);
 
 	cout << "Number of children: " << scene.children().size() << endl;
 	
