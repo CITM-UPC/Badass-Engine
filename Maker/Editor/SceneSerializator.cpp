@@ -160,9 +160,6 @@ void SceneManager::saveScene(const std::string& filePath) {
 
 void SceneManager::clearScene() {
     gameObjectsOnScene.clear();
-	for (GameObject& go : scene.getChildren()) {
-		go.DeleteGameObject();
-	}
     selectedObject = nullptr;
 }
 
@@ -175,69 +172,69 @@ void SceneManager::loadScene(const std::string& filePath) {
 
     clearScene();
 
-    //std::string line;
-    //while (std::getline(inFile, line)) {
-    //    if (line.find("\"Id\":") != std::string::npos) {
-    //        GameObject go;
-    //        go.setId(std::stoi(line.substr(line.find(":") + 1)));
+    std::string line;
+    while (std::getline(inFile, line)) {
+        if (line.find("\"Id\":") != std::string::npos) {
+            GameObject go;
+            go.setId(std::stoi(line.substr(line.find(":") + 1)));
 
-    //        // Parse Name
-    //        std::getline(inFile, line);
-    //        if (line.find("\"Name\":") != std::string::npos) {
-    //            std::string name = line.substr(line.find(":") + 2);
-    //            name.erase(name.find_last_of("\""));
-    //            go.SetName(name);
-    //        }
+            // Parse Name
+            std::getline(inFile, line);
+            if (line.find("\"Name\":") != std::string::npos) {
+                std::string name = line.substr(line.find(":") + 2);
+                name.erase(name.find_last_of("\""));
+                go.SetName(name);
+            }
 
-    //        // Parse Transform
-    //        Transform transform;
-    //        while (std::getline(inFile, line) && line.find("}") == std::string::npos) {
-    //            if (line.find("\"Position\":") != std::string::npos) {
-    //                std::istringstream iss(line.substr(line.find("[") + 1));
-    //                glm::vec3 pos;
-    //                char delim;
-    //                iss >> pos.x >> delim >> pos.y >> delim >> pos.z;
-    //                transform.SetPosition(pos);
-    //            }
-    //            else if (line.find("\"Scale\":") != std::string::npos) {
-    //                std::istringstream iss(line.substr(line.find("[") + 1));
-    //                glm::vec3 scale;
-    //                char delim;
-    //                iss >> scale.x >> delim >> scale.y >> delim >> scale.z;
-    //                transform.SetScale(scale);
-    //            }
-    //            else if (line.find("\"Rotation\":") != std::string::npos) {
-    //                std::istringstream iss(line.substr(line.find("[") + 1));
-    //                glm::vec3 rotation;
-    //                char delim;
-    //                iss >> rotation.x >> delim >> rotation.y >> delim >> rotation.z;
-    //                transform.SetRotation(rotation);
-    //            }
-    //        }
-    //        go.AddComponent<TransformComponent>()->transform() = transform;
+            // Parse Transform
+            Transform transform;
+            while (std::getline(inFile, line) && line.find("}") == std::string::npos) {
+                if (line.find("\"Position\":") != std::string::npos) {
+                    std::istringstream iss(line.substr(line.find("[") + 1));
+                    glm::vec3 pos;
+                    char delim;
+                    iss >> pos.x >> delim >> pos.y >> delim >> pos.z;
+                    transform.SetPosition(pos);
+                }
+                else if (line.find("\"Scale\":") != std::string::npos) {
+                    std::istringstream iss(line.substr(line.find("[") + 1));
+                    glm::vec3 scale;
+                    char delim;
+                    iss >> scale.x >> delim >> scale.y >> delim >> scale.z;
+                    transform.SetScale(scale);
+                }
+                else if (line.find("\"Rotation\":") != std::string::npos) {
+                    std::istringstream iss(line.substr(line.find("[") + 1));
+                    glm::vec3 rotation;
+                    char delim;
+                    iss >> rotation.x >> delim >> rotation.y >> delim >> rotation.z;
+                    transform.SetRotation(rotation);
+                }
+            }
+            go.AddComponent<TransformComponent>()->transform() = transform;
 
-    //        // Parse Mesh
-    //        std::getline(inFile, line);
-    //        if (line.find("\"Mesh\": \"BinaryDataStart\"") != std::string::npos) {
-    //            auto mesh = std::make_shared<Mesh>();
+            // Parse Mesh
+            std::getline(inFile, line);
+            if (line.find("\"Mesh\": \"BinaryDataStart\"") != std::string::npos) {
+                auto mesh = std::make_shared<Mesh>();
 
-    //            uint32_t vertexCount, indexCount;
-    //            inFile.read(reinterpret_cast<char*>(&vertexCount), sizeof(vertexCount));
-    //            inFile.read(reinterpret_cast<char*>(&indexCount), sizeof(indexCount));
+                uint32_t vertexCount, indexCount;
+                inFile.read(reinterpret_cast<char*>(&vertexCount), sizeof(vertexCount));
+                inFile.read(reinterpret_cast<char*>(&indexCount), sizeof(indexCount));
 
-    //            std::vector<glm::vec3> vertices(vertexCount);
-    //            std::vector<unsigned int> indices(indexCount);
+                std::vector<glm::vec3> vertices(vertexCount);
+                std::vector<unsigned int> indices(indexCount);
 
-    //            inFile.read(reinterpret_cast<char*>(vertices.data()), vertexCount * sizeof(glm::vec3));
-    //            inFile.read(reinterpret_cast<char*>(indices.data()), indexCount * sizeof(unsigned int));
+                inFile.read(reinterpret_cast<char*>(vertices.data()), vertexCount * sizeof(glm::vec3));
+                inFile.read(reinterpret_cast<char*>(indices.data()), indexCount * sizeof(unsigned int));
 
-    //            mesh->load(vertices.data(), vertices.size(), indices.data(), indices.size());
-    //            go.setMesh(mesh);
-    //        }
+                mesh->load(vertices.data(), vertices.size(), indices.data(), indices.size());
+                go.setMesh(mesh);
+            }
 
-    //        gameObjectsOnScene.push_back(go);
-    //    }
-    //}
+            gameObjectsOnScene.push_back(go);
+        }
+    }
 
     inFile.close();
     
