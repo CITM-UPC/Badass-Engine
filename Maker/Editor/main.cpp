@@ -711,15 +711,15 @@ int main(int argc, char* argv[]) {
 				break;
 			case SDL_MOUSEBUTTONDOWN:
 				if (event.button.button == SDL_BUTTON_LEFT) {
-					if (!gui.isSelectedFromWindow)
+					int mouseX, mouseY;
+					SDL_GetMouseState(&mouseX, &mouseY);
+					if (mouseX > 300 && mouseX < 900)
 					{
 						// Convertir las coordenadas del ratón a coordenadas del mundo
 						selectedGameObject = raycastFromMouseToGameObject(event.button.x, event.button.y, projectionMatrix, viewMatrix, WINDOW_SIZE);
+
 					}
-					else
-					{
-						gui.isSelectedFromWindow = false;
-					}
+					
 					
 				}
 			case SDL_MOUSEBUTTONUP:
@@ -734,7 +734,6 @@ int main(int argc, char* argv[]) {
 				break;
 			}
 		}
-
 
 	}
 

@@ -173,6 +173,13 @@ void MyGUI::renderGameObjectWindow() {
     }
 }
 
+void MyGUI::processPendingOperations() {
+	while (!pendingOperations.empty()) {
+		pendingOperations.front()();
+		pendingOperations.pop();
+	}
+}
+
 void MyGUI::renderGameObjectNode(GameObject* gameObject)
 {
     // Set the flags for the tree node
@@ -189,8 +196,10 @@ void MyGUI::renderGameObjectNode(GameObject* gameObject)
     // Create a tree node for the GameObject
     bool nodeOpen = ImGui::TreeNodeEx(gameObject->GetName().c_str(), nodeFlags);
     if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
-        persistentSelectedGameObject = gameObject;
-        isSelectedFromWindow = true; // Set the flag when selected from the window
+		pendingOperations.push([gameObject]() {
+            persistentSelectedGameObject = gameObject;
+			});
+        
     }
 
     // Static variables for renaming functionality
@@ -873,7 +882,6 @@ void MyGUI::CheckForDuplicateNamesRecursive(GameObject& gameObject)
         CheckForDuplicateNamesRecursive(*it);
     }
 }
-
 
 void MyGUI::render() {
     ImGui_ImplOpenGL3_NewFrame();

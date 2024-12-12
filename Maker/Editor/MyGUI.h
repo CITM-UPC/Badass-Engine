@@ -28,6 +28,7 @@ public:
     void CheckForDuplicateNames();
     void CheckForDuplicateNamesRecursive(GameObject& gameObject);
     void render();
+	void processPendingOperations();
     void processEvent(const SDL_Event& event);
     void renderConsoleWindow();
     void renderAssetWindow();
